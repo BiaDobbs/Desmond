@@ -1,3 +1,4 @@
+// Lista de animais
 let animals = [
   { name: 'Cavalo', color: '#FFC107' },
   { name: 'Pinguim', color: '#03A9F4' },
@@ -6,38 +7,47 @@ let animals = [
   { name: 'Aranha', color: '#E03316' },
   { name: 'Formiga', color: '#5BB027' },
 ];
+
 let current = 0;
 let offsetX = 0;
-
-// Variáveis para mostrar os resultados depois
-let mostrandoResultados = false;
-let resultados = [];
+let votos = [];
+let userId;
+let comparando = false;
+let porcentagemSimilaridade = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textSize(32);
   rectMode(CENTER);
+
+  // Gera ou carrega user_id
+  userId = localStorage.getItem('user_id');
+  if (!userId) {
+    userId = crypto.randomUUID();
+    localStorage.setItem('user_id', userId);
+  }
 }
 
 function draw() {
   background(255);
 
-  // Se já votou em todos, mostra a tela de resultados
-  if (mostrandoResultados) {
-    mostrarRankingNoCanvas();
-    return; // não desenha mais nada abaixo
-  }
-
-  // Se ainda estiver votando, mostra as cartas
-  if (current >= animals.length) {
+  if (comparando) {
     fill(0);
     textSize(24);
-    text("Obrigada por votar!", width / 2, height / 2);
+    text(`Você votou igual a ${porcentagemSimilaridade.toFixed(0)}% das pessoas`, width / 2, height / 2);
     return;
   }
 
-  // Carta abaixo (próxima)
+  if (current >= animals.length) {
+    fill(0);
+    textSize(24);
+    text("Obrigada por votar!", width / 2, height / 2 - 40);
+    compararComOutros();
+    return;
+  }
+
+  // Card seguinte
   if (current + 1 < animals.length) {
     push();
     let next = animals[current + 1];
@@ -49,7 +59,7 @@ function draw() {
     pop();
   }
 
-  // Carta atual
+  // Card atual
   let animal = animals[current];
   push();
   translate(width / 2 + offsetX, height / 2);
@@ -60,7 +70,7 @@ function draw() {
   text(animal.name, 0, 0);
   pop();
 
-  // Emoji feedback de swipe
+  // Emoji feedback
   let threshold = 50;
   if (abs(offsetX) > threshold) {
     push();
@@ -89,95 +99,58 @@ function mouseReleased() {
 
 function vote(direction) {
   let animalName = animals[current].name;
-  console.log(`Você votou ${direction} em ${animalName}`);
 
-  // Envia para Supabase
   fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-       'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'
+      'apikey': 'SUA_API_KEY',
+      'Authorization': 'Bearer SUA_API_KEY'
     },
     body: JSON.stringify({
+      user_id: userId,
       animal: animalName,
       vote: direction === 'right' ? 'like' : 'dislike',
       timestamp: new Date().toISOString()
     })
   })
-  .then(res => {
-    if (!res.ok) throw new Error('Erro ao enviar voto');
-    return res.text(); // recebe resposta como texto
-  })
-  .then(text => {
-    try {
-      const data = JSON.parse(text);
-      console.log("Voto salvo com sucesso:", data);
-    } catch {
-      console.log("Voto salvo com sucesso (sem corpo de resposta)");
-    }
+  .then(res => res.text())
+  .then(() => {
+    offsetX = 0;
+    current++;
   })
   .catch(err => {
     console.error("Erro ao enviar voto:", err);
   });
-
-  offsetX = 0;
-  current++;
-
-  // Se acabou as cartas, buscar e mostrar resultados
-  if (current >= animals.length) {
-    console.log("Fim da votação, buscando resultados...");
-    mostrarResultados();
-  }
 }
 
-function mostrarResultados() {
-  fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes?select=animal,vote', {
+function compararComOutros() {
+  fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
     method: 'GET',
     headers: {
-       'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'
-    },
+      'apikey': 'SUA_API_KEY',
+      'Authorization': 'Bearer SUA_API_KEY'
+    }
   })
   .then(res => res.json())
   .then(data => {
-    console.log("Dados recebidos do Supabase:", data);
-    const contagem = {};
+    let meusVotos = data.filter(v => v.user_id === userId);
+    let outros = data.filter(v => v.user_id !== userId);
 
-    data.forEach(({ animal, vote }) => {
-      if (!contagem[animal]) contagem[animal] = { like: 0, dislike: 0 };
-      contagem[animal][vote]++;
+    let iguais = 0;
+    meusVotos.forEach(meu => {
+      let votosAnimal = outros.filter(v => v.animal === meu.animal);
+      if (votosAnimal.length === 0) return;
+
+      let likes = votosAnimal.filter(v => v.vote === 'like').length;
+      let dislikes = votosAnimal.filter(v => v.vote === 'dislike').length;
+      let maioria = likes >= dislikes ? 'like' : 'dislike';
+
+      if (meu.vote === maioria) iguais++;
     });
 
-    // Ranking por % de likes
-    const ranking = Object.entries(contagem)
-      .map(([animal, votos]) => {
-        const total = votos.like + votos.dislike;
-        const porcentagem = total ? (votos.like / total) * 100 : 0;
-        return { animal, ...votos, porcentagem };
-      })
-      .sort((a, b) => b.porcentagem - a.porcentagem);
-
-    resultados = ranking;
-    mostrandoResultados = true;
+    porcentagemSimilaridade = (iguais / meusVotos.length) * 100;
+    comparando = true;
   })
-  .catch(err => {
-    console.error("Erro ao buscar votos:", err);
-  });
-}
-
-function mostrarRankingNoCanvas() {
-  background(255);
-  fill(0);
-  textSize(24);
-  text("Ranking dos Animais ❤️", width / 2, 50);
-
-   console.log("Resultados para desenhar:", resultados);
-
-  textSize(16);
-  for (let i = 0; i < resultados.length; i++) {
-    const r = resultados[i];
-    let y = 100 + i * 30;
-    text(`${i + 1}. ${r.animal} — ❤️ ${r.porcentagem.toFixed(1)}% (${r.like} likes, ${r.dislike} dislikes)`, width / 2, y);
-  }
+  .catch(err => console.error("Erro ao comparar votos:", err));
 }
