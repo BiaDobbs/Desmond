@@ -96,12 +96,18 @@ function vote(direction) {
     })
   })
   .then(res => {
-    if (!res.ok) throw new Error('Erro ao enviar voto');
-    return res.json();
-  })
-  .then(data => {
+  if (!res.ok) throw new Error('Erro ao enviar voto');
+  return res.text(); // ← retorna como texto (mesmo vazio)
+})
+.then(text => {
+  try {
+    const data = JSON.parse(text);
     console.log("Voto salvo com sucesso:", data);
-  })
+  } catch {
+    console.log("Voto salvo com sucesso (sem corpo de resposta)");
+  }
+})
+
   .catch(err => {
     console.error("Erro ao enviar voto:", err);
   });
