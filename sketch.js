@@ -82,7 +82,7 @@ function vote(direction) {
   console.log(`Você votou ${direction} em ${animalName}`);
 
   // Envia para Supabase
-  fetch('https://https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
+  fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
