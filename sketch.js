@@ -1,3 +1,7 @@
+let modoDev = false; // pular votação direto
+let tela = 'votacao'; // 'votacao' ou 'resultado'
+
+
 // Lista de animais
 let animals = [
   { name: 'Cavalo', color: '#FFC107' },
@@ -8,9 +12,13 @@ let animals = [
   { name: 'Formiga', color: '#5BB027' },
 ];
 
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU';
+const KEY_BEARER = 'Bearer ' + KEY;
+
 let topLikes = [];
 let topDislikes = [];
 let ended = false;
+let paises = [];
 
 let current = 0;
 let offsetX = 0;
@@ -19,23 +27,49 @@ let userId;
 let comparando = false;
 let porcentagemSimilaridade = 0;
 
+let countryCode = '';
+
+function preload (){
+  fetchPaises();
+}
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textSize(32);
   rectMode(CENTER);
 
-  // Gera ou carrega user_id
   userId = localStorage.getItem('user_id');
   if (!userId) {
     userId = crypto.randomUUID();
     localStorage.setItem('user_id', userId);
+  }
+
+  fetch('https://ipapi.co/json/')
+    .then(res => res.json())
+    .then(data => {
+      countryCode = data.country_code;
+    });
+
+  if (modoDev) {
+    tela = 'resultado';
+    ended = true;
+    fetchTopVotes();
+    fetchPaises();
   }
 }
 
 function draw() {
   background(255);
 
+  if (tela === 'votacao') {
+    desenharVotacao();
+  } else if (tela === 'resultado') {
+    desenharResultados();
+  }
+}
+
+function desenharVotacao() {
   if (comparando) {
     fill(0);
     textSize(24);
@@ -44,35 +78,12 @@ function draw() {
   }
 
   if (current >= animals.length) {
-if (current >= animals.length) {
-    if (!ended) {
-      ended = true;
-      fetchTopVotes();
-    }
-
-    fill(0);
-    textSize(24);
-    text("Obrigada por votar!", width / 2, height / 2 - 50);
-
-    // Mostra top 5
-    textSize(18);
-    let y = height / 2;
-
-    text("Top 5 mais curtidos:", width / 2, y);
-    topLikes.forEach((item, i) => {
-      text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
-    });
-
-    y += 160;
-    text("Top 5 mais rejeitados:", width / 2, y);
-    topDislikes.forEach((item, i) => {
-      text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
-    });
-
+    tela = 'resultado';
+    fetchTopVotes();
+    fetchPaises();
     return;
   }
 
-  // Card seguinte
   if (current + 1 < animals.length) {
     push();
     let next = animals[current + 1];
@@ -84,7 +95,6 @@ if (current >= animals.length) {
     pop();
   }
 
-  // Card atual
   let animal = animals[current];
   push();
   translate(width / 2 + offsetX, height / 2);
@@ -95,7 +105,6 @@ if (current >= animals.length) {
   text(animal.name, 0, 0);
   pop();
 
-  // Emoji feedback
   let threshold = 50;
   if (abs(offsetX) > threshold) {
     push();
@@ -106,6 +115,38 @@ if (current >= animals.length) {
     text(offsetX > 0 ? '❤️' : '❌', width / 2, height / 2 - 250);
     pop();
   }
+}
+
+function desenharResultados() {
+  fill(0);
+  textSize(24);
+  text("Obrigada por votar!", width / 2, height / 10);
+
+  textSize(18);
+  let y = height / 4;
+
+  text("Top 5 mais curtidos:", width / 2, y);
+  topLikes.forEach((item, i) => {
+    text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
+  });
+
+  y += 160;
+  text("Top 5 mais rejeitados:", width / 2, y);
+  topDislikes.forEach((item, i) => {
+    text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
+  });
+
+  y += 160;
+  text("Votos por país:", width / 2, y);
+if (Array.isArray(paises)) {
+  paises.forEach((pais, i) => {
+    let flag = getEmojiFlag(pais.country);
+    text(`${flag} ${pais.country} (${pais.total})`, width / 2, height / 2 + 200 + i * 24);
+  });
+} else {
+  console.warn("❗ 'paises' não é um array:", paises);
+}
+
 }
 
 function mouseDragged() {
@@ -129,13 +170,14 @@ function vote(direction) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'
+      'apikey': KEY,
+      'Authorization': KEY_BEARER
     },
     body: JSON.stringify({
       user_id: userId,
       animal: animalName,
       vote: direction === 'right' ? 'like' : 'dislike',
+      country: countryCode,
       timestamp: new Date().toISOString()
     })
   })
@@ -153,8 +195,9 @@ function compararComOutros() {
   fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
     method: 'GET',
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'
+      'apikey': KEY,
+      'Authorization': KEY_BEARER
+    }
   })
   .then(res => res.json())
   .then(data => {
@@ -179,14 +222,12 @@ function compararComOutros() {
   .catch(err => console.error("Erro ao comparar votos:", err));
 }
 
-
 function fetchTopVotes() {
-  // Likes
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_likes", {
     method: 'POST',
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',    }
+      'apikey': KEY,
+      'Authorization': KEY_BEARER,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
@@ -194,15 +235,13 @@ function fetchTopVotes() {
   .then(res => res.json())
   .then(data => {
     topLikes = data;
-    console.log("Mais curtidos:", topLikes);
   });
 
-  // Dislikes
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_dislikes", {
     method: 'POST',
     headers: {
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
-      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',    }
+      'apikey': KEY,
+      'Authorization': KEY_BEARER,
       'Content-Type': 'application/json',
       'Prefer': 'return=representation'
     }
@@ -210,6 +249,26 @@ function fetchTopVotes() {
   .then(res => res.json())
   .then(data => {
     topDislikes = data;
-    console.log("Mais rejeitados:", topDislikes);
   });
 }
+
+function fetchPaises() {
+  fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/unique_voters_by_country', {
+    method: 'POST',
+    headers: {
+      'apikey': KEY,
+      'Authorization': KEY_BEARER
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    paises = data;
+  })
+  .catch(err => console.error("Erro ao buscar países:", err));
+}
+
+function getEmojiFlag(countryCode) {
+  if (!countryCode || countryCode.length !== 2) return '🏳️';
+  return String.fromCodePoint(...[...countryCode.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+}
+
