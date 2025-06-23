@@ -8,6 +8,10 @@ let animals = [
   { name: 'Formiga', color: '#5BB027' },
 ];
 
+let topLikes = [];
+let topDislikes = [];
+let ended = false;
+
 let current = 0;
 let offsetX = 0;
 let votos = [];
@@ -40,10 +44,31 @@ function draw() {
   }
 
   if (current >= animals.length) {
+if (current >= animals.length) {
+    if (!ended) {
+      ended = true;
+      fetchTopVotes();
+    }
+
     fill(0);
     textSize(24);
-    text("Obrigada por votar!", width / 2, height / 2 - 40);
-    compararComOutros();
+    text("Obrigada por votar!", width / 2, height / 2 - 50);
+
+    // Mostra top 5
+    textSize(18);
+    let y = height / 2;
+
+    text("Top 5 mais curtidos:", width / 2, y);
+    topLikes.forEach((item, i) => {
+      text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
+    });
+
+    y += 160;
+    text("Top 5 mais rejeitados:", width / 2, y);
+    topDislikes.forEach((item, i) => {
+      text(`${i + 1}. ${item.animal} (${item.total})`, width / 2, y + (i + 1) * 20);
+    });
+
     return;
   }
 
@@ -151,4 +176,39 @@ function compararComOutros() {
     comparando = true;
   })
   .catch(err => console.error("Erro ao comparar votos:", err));
+}
+
+
+function fetchTopVotes() {
+  // Likes
+  fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_likes", {
+    method: 'POST',
+    headers: {
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'    }
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    topLikes = data;
+    console.log("Mais curtidos:", topLikes);
+  });
+
+  // Dislikes
+  fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_dislikes", {
+    method: 'POST',
+    headers: {
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'    }
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    topDislikes = data;
+    console.log("Mais rejeitados:", topDislikes);
+  });
 }
