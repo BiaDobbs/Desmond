@@ -126,6 +126,7 @@ function vote(direction) {
 
   // Se acabou as cartas, buscar e mostrar resultados
   if (current >= animals.length) {
+    console.log("Fim da votação, buscando resultados...");
     mostrarResultados();
   }
 }
@@ -140,6 +141,7 @@ function mostrarResultados() {
   })
   .then(res => res.json())
   .then(data => {
+    console.log("Dados recebidos do Supabase:", data);
     const contagem = {};
 
     data.forEach(({ animal, vote }) => {
@@ -169,6 +171,8 @@ function mostrarRankingNoCanvas() {
   fill(0);
   textSize(24);
   text("Ranking dos Animais ❤️", width / 2, 50);
+
+   console.log("Resultados para desenhar:", resultados);
 
   textSize(16);
   for (let i = 0; i < resultados.length; i++) {
