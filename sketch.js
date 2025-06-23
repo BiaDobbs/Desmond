@@ -1,7 +1,3 @@
-let modoDev = false; // pular votação direto
-let tela = 'votacao'; // 'votacao' ou 'resultado'
-
-
 // Lista de animais
 let animals = [
   { name: 'Cavalo', color: '#FFC107' },
@@ -27,7 +23,9 @@ let userId;
 let comparando = false;
 let porcentagemSimilaridade = 0;
 
-let countryCode = '';
+let modoDev = false; // Ative para pular votação direto
+let tela = 'votacao';
+let countryCode = null;  // começa como null para evitar "unknown"
 
 function preload (){
   fetchPaises();
@@ -45,10 +43,18 @@ function setup() {
     localStorage.setItem('user_id', userId);
   }
 
+  // Pega o país e só aí atribui o countryCode
   fetch('https://ipapi.co/json/')
     .then(res => res.json())
     .then(data => {
-      countryCode = data.country_code;
+      if (data && data.country_code) {
+        countryCode = data.country_code;
+      } else {
+        countryCode = null; // fallback
+      }
+    })
+    .catch(() => {
+      countryCode = null; // fallback em caso de erro
     });
 
   if (modoDev) {
@@ -120,10 +126,10 @@ function desenharVotacao() {
 function desenharResultados() {
   fill(0);
   textSize(24);
-  text("Obrigada por votar!", width / 2, height / 10);
+  text("Obrigada por votar!", width / 2, height / 2 - 50);
 
   textSize(18);
-  let y = height / 4;
+  let y = height / 2;
 
   text("Top 5 mais curtidos:", width / 2, y);
   topLikes.forEach((item, i) => {
@@ -138,15 +144,12 @@ function desenharResultados() {
 
   y += 160;
   text("Votos por país:", width / 2, y);
-if (Array.isArray(paises)) {
-  paises.forEach((pais, i) => {
-    let flag = getEmojiFlag(pais.country);
-    text(`${flag} ${pais.country} (${pais.total})`, width / 2, height / 2 + 200 + i * 24);
-  });
-} else {
-  console.warn("❗ 'paises' não é um array:", paises);
-}
+  paises.forEach((p, i) => {
+    let code = p.country ? p.country.toUpperCase() : '';
+    let flagEmoji = code.length === 2 ? countryCodeToEmoji(code) : '🏳️'; // fallback bandeira branca
+text(`${flagEmoji} ${p.country} — ${p.total}`, width / 2, y + (i + 1) * 20);
 
+  });
 }
 
 function mouseDragged() {
@@ -166,6 +169,14 @@ function mouseReleased() {
 function vote(direction) {
   let animalName = animals[current].name;
 
+  // Só envia o voto se countryCode já estiver definido e válido
+  if (!countryCode) {
+    console.warn("País desconhecido - voto não enviado.");
+    offsetX = 0;
+    current++;
+    return;
+  }
+
   fetch('https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
     method: 'POST',
     headers: {
@@ -181,13 +192,16 @@ function vote(direction) {
       timestamp: new Date().toISOString()
     })
   })
-  .then(res => res.text())
-  .then(() => {
+  .then(res => {
+    if (!res.ok) throw new Error('Erro ao enviar voto');
     offsetX = 0;
     current++;
   })
   .catch(err => {
     console.error("Erro ao enviar voto:", err);
+    // Mesmo se erro, avança para próximo animal para não travar
+    offsetX = 0;
+    current++;
   });
 }
 
@@ -267,8 +281,9 @@ function fetchPaises() {
   .catch(err => console.error("Erro ao buscar países:", err));
 }
 
-function getEmojiFlag(countryCode) {
-  if (!countryCode || countryCode.length !== 2) return '🏳️';
-  return String.fromCodePoint(...[...countryCode.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+function countryCodeToEmoji(code) {
+  if (code.length !== 2) return '🏳️';
+  return code.toUpperCase().replace(/./g, char =>
+    String.fromCodePoint(127397 + char.charCodeAt())
+  );
 }
-
