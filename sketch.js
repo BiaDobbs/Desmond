@@ -78,7 +78,34 @@ function mouseReleased() {
 }
 
 function vote(direction) {
-  console.log(`You swiped ${direction} on ${animals[current].name}`);
+  let animalName = animals[current].name;
+  console.log(`Você votou ${direction} em ${animalName}`);
+
+  // Envia para Supabase
+  fetch('https://https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU',
+      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU'
+    },
+    body: JSON.stringify({
+      animal: animalName,
+      vote: direction === 'right' ? 'like' : 'dislike',
+      timestamp: new Date().toISOString()
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Erro ao enviar voto');
+    return res.json();
+  })
+  .then(data => {
+    console.log("Voto salvo com sucesso:", data);
+  })
+  .catch(err => {
+    console.error("Erro ao enviar voto:", err);
+  });
+
   offsetX = 0;
   current++;
 }
