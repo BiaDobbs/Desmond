@@ -1222,3 +1222,7 @@ function fetchTopSuperVotes() {
       
     });
 }
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
