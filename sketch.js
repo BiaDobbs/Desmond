@@ -1,5 +1,5 @@
 let modoDev = false; // pular votação
-let tela = "sugestao"; // votacao, sugestao ou resultado
+let tela = "votacao"; // votacao, sugestao ou resultado
 
 let coresGenially = [
   "#F8F4E8",
