@@ -456,7 +456,7 @@ function desenharCard(animal) {
 
   if (isMobile) {
     // MOBILE
-    cardHeight = height * 0.4; 
+    cardHeight = height * 0.6; 
     cardWidth = cardHeight * 0.75; 
   } else {
     // DESKTOP
