@@ -449,11 +449,18 @@ function desenharVotacao() {
 }
 
 function desenharCard(animal) {
-  let cardWidth = width * 0.4;
-  let cardHeight = height * 0.6;
-  let tituloAltura = cardHeight * 0.13;
-  let tituloLargura = cardWidth * 0.7;
+    const proporcao = 1.2; // altura = largura * 1.2 (como você já usava)
+  
+  // Largura responsiva entre 300 e 500 px, conforme largura da tela
+  let cardWidth = constrain(width * 0.9, 300, 400);
+  
+  // Altura baseada na proporção fixa
+  let cardHeight = cardWidth * proporcao;
 
+  // Agora o resto igual ao seu desenho, usando cardWidth e cardHeight...
+  
+  let tituloAltura = cardHeight * 0.13;
+  let tituloLargura = cardWidth * 0.8;
   push();
   rectMode(CORNER);
   fill("#F8F4E8");
