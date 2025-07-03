@@ -431,7 +431,9 @@ function desenharVotacao() {
   let animal = animals[current];
   push();
   translate(width / 2 + offsetX, height / 2);
+
   rotate(radians(offsetX * 0.05));
+  
   desenharCard(animal);
   pop();
 
@@ -448,27 +450,26 @@ function desenharVotacao() {
   }
 }
 
-function desenharCard(animal) {  const proporcao = 1;
+function desenharCard(animal) {
   
-  // Define largura mínima e máxima diferentes para mobile e desktop
-  let minWidth, maxWidth;
+    let cardWidth, cardHeight;
 
-  if (windowWidth <= 768) { // breakpoint para mobile (ajuste se quiser)
-    minWidth = 400;
-    maxWidth = 500;
+  if (windowWidth <= 768) {
+    // MOBILE
+    cardHeight = windowHeight * 0.7;
+    cardWidth = cardHeight * 0.8; // proporção mais vertical
   } else {
-    minWidth = 300;
-    maxWidth = 400;
+    // DESKTOP
+    cardWidth = constrain(windowWidth * 0.5, 200, 500);
+    cardHeight = cardWidth * 1.1;
   }
 
-  let cardWidth = constrain(windowWidth * 0.9, minWidth, maxWidth);
-  let cardHeight = cardWidth * proporcao;
-                               
-  console.log(cardWidth, cardHeight);
-  
   let tituloAltura = cardHeight * 0.13;
   let tituloLargura = cardWidth * 0.8;
+                               
+  translate(0, -windowHeight * 0.05);                             
   push();
+  
   rectMode(CORNER);
   fill("#F8F4E8");
   stroke("#1A0D72");
@@ -566,7 +567,7 @@ if (animal.tags && animal.tags.length > 0) {
   animal.tags.forEach((tag, i) => {
     let tagX = startX + i * tagSpacing;
     fill("#1A0D72");
-    rect(tagX, tagsY, tagBoxW, tagBoxH, tagBoxH * 0.25); // borda arredondada proporcional
+    rect(tagX, tagsY, tagBoxW, tagBoxH, tagBoxH * 0.25); 
     fill("#C0B9ED");
     text(tag, tagX, tagsY);
   });
