@@ -448,16 +448,23 @@ function desenharVotacao() {
   }
 }
 
-function desenharCard(animal) {
-    const proporcao = 1.2; // altura = largura * 1.2 (como você já usava)
+function desenharCard(animal) {  const proporcao = 1;
   
-  // Largura responsiva entre 300 e 500 px, conforme largura da tela
-  let cardWidth = constrain(width * 0.9, 300, 400);
-  
-  // Altura baseada na proporção fixa
-  let cardHeight = cardWidth * proporcao;
+  // Define largura mínima e máxima diferentes para mobile e desktop
+  let minWidth, maxWidth;
 
-  // Agora o resto igual ao seu desenho, usando cardWidth e cardHeight...
+  if (windowWidth <= 768) { // breakpoint para mobile (ajuste se quiser)
+    minWidth = 400;
+    maxWidth = 500;
+  } else {
+    minWidth = 300;
+    maxWidth = 400;
+  }
+
+  let cardWidth = constrain(windowWidth * 0.9, minWidth, maxWidth);
+  let cardHeight = cardWidth * proporcao;
+                               
+  console.log(cardWidth, cardHeight);
   
   let tituloAltura = cardHeight * 0.13;
   let tituloLargura = cardWidth * 0.8;
