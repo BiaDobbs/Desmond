@@ -20,8 +20,6 @@ let gradienteFundo;
 let videoLike, videoDislike;
 let videoEmExibicao = false;
 
-
-
 /*
 
 */
@@ -106,7 +104,6 @@ let justificativaTexto = ""; // texto digitado na justificativa
 let superLikesCount = 0;
 let superDislikesCount = 0;
 
-
 let caixaInput;
 let botaoEnviar;
 let tipoSuper = null;
@@ -115,8 +112,6 @@ let caixaJustificativaVisivel = false;
 let topSuperLikes = [];
 let topSuperDislikes = [];
 
-
-
 let sugestaoInicializada = false;
 
 let inputFavorito, inputOdiado;
@@ -124,26 +119,26 @@ let botaoPular;
 let mensagemSucesso = false;
 let tempoMensagemSucesso = 0;
 
-
 let enviadoFavorito = false;
 let enviadoOdiado = false;
-
 
 function preload() {
   fetchPaises();
   animals.forEach((animal) => {
     animal.img = loadImage(animal.foto);
   });
-  
-   videoLike = createVideo("https://cdn.pixabay.com/video/2018/03/28/15240-262569955_large.mp4");
-  videoLike.hide();
-videoLike.elt.style.zIndex = "99999";
 
-  videoDislike = createVideo("https://cdn.pixabay.com/video/2023/07/02/169797-841740222_large.mp4");
+  videoLike = createVideo(
+    "https://cdn.pixabay.com/video/2018/03/28/15240-262569955_large.mp4"
+  );
+  videoLike.hide();
+  videoLike.elt.style.zIndex = "99999";
+
+  videoDislike = createVideo(
+    "https://cdn.pixabay.com/video/2023/07/02/169797-841740222_large.mp4"
+  );
   videoDislike.hide();
   videoDislike.elt.style.zIndex = "99999";
-  
-
 }
 
 function setup() {
@@ -151,8 +146,6 @@ function setup() {
   textAlign(CENTER, CENTER);
   textSize(32);
   rectMode(CENTER);
-
-  //gradienteDiagonal()
 
   userId = localStorage.getItem("user_id");
   if (!userId) {
@@ -182,18 +175,18 @@ function setup() {
     fetchTopSuperVotes();
   }
 
-  gradienteFundo = createGraphics(width, height);
-  gerarGradiente(gradienteFundo);
+  //gradienteFundo = createGraphics(windowWidth, windowHeight);
+  //gerarGradiente(gradienteFundo);
 
-caixaInput = createInput();
+  caixaInput = createInput();
   caixaInput.class("input-caixa");
   caixaInput.size(400, 100);
-  caixaInput.position((width / 2)-(caixaInput.width/2), height / 2-40);
+  caixaInput.position(width / 2 - caixaInput.width / 2, height / 2 - 40);
   caixaInput.hide();
 
   botaoEnviar = createButton("Enviar");
   botaoEnviar.class("botao-enviar");
-  botaoEnviar.position(width / 2+120, height / 2 + 100);
+  botaoEnviar.position(width / 2 + 120, height / 2 + 100);
   botaoEnviar.mousePressed(enviarJustificativa);
   botaoEnviar.hide();
 
@@ -202,13 +195,17 @@ caixaInput = createInput();
   botaoCancelar.position(width / 2 - 180, height / 2 + 100);
   botaoCancelar.mousePressed(cancelarJustificativa);
   botaoCancelar.hide();
+  
+  console.log('Canvas size:', width, height);
+console.log('Window size:', windowWidth, windowHeight);
+
 }
 
 function draw() {
-  //background('#EDE7CF');
-  image(gradienteFundo, 0, 0);
-  
-    if (videoEmExibicao) {
+  //image(gradienteFundo, 0, 0, width, height);
+  drawGradientBackground()
+
+  if (videoEmExibicao) {
     imageMode(CORNER);
     image(videoEmExibicao, 0, 0, width, height);
     return; // pausa o resto do draw enquanto o vídeo passa
@@ -216,18 +213,17 @@ function draw() {
 
   //drawGrid();
 
-if (tela === "votacao") {
-  rectMode(CENTER);
-  desenharVotacao();
-} else if (tela === "sugestao") {
-  rectMode(CENTER);
-  desenharSugestaoFinal();
-} else if (tela === "resultado") {
-  rectMode(CORNER);
-  compararComOutros();
-  desenharResultados();
-}
-
+  if (tela === "votacao") {
+    rectMode(CENTER);
+    desenharVotacao();
+  } else if (tela === "sugestao") {
+    rectMode(CENTER);
+    desenharSugestaoFinal();
+  } else if (tela === "resultado") {
+    rectMode(CORNER);
+    compararComOutros();
+    desenharResultados();
+  }
 
   if (caixaJustificativaVisivel) {
     let cardWidth = 600;
@@ -264,36 +260,30 @@ if (tela === "votacao") {
       0,
       tituloOffsetY
     );
-    
+
     //texto de confirmação
-textStyle(NORMAL);
-  textSize(20);
-  fill("#1A0D72");
-  textAlign(CENTER, TOP);
-  textWrap(WORD);
+    textStyle(NORMAL);
+    textSize(20);
+    fill("#1A0D72");
+    textAlign(CENTER, TOP);
+    textWrap(WORD);
 
-  let restantes =
-    tipoSuper === "like"
-      ? 3 - superLikesCount
-      : 3 - superDislikesCount;
-    
-  let textoConfirmacao =
-    (tipoSuper === "like"
-      ? "Conta mais sobre o que você ✨Super Like✨ nesse animal!"
-      : "Conta mais sobre o que você ⚡Super Dislike⚡ nesse animal!") +
-    `\nMas pense bem antes de confirmar, você só tem mais \n ${restantes}` + (tipoSuper === "like"
-      ? " Super Likes"
-      : " Super Dislikes") + " disponíveis!";
+    let restantes =
+      tipoSuper === "like" ? 3 - superLikesCount : 3 - superDislikesCount;
 
-  let textoY = tituloOffsetY + 30;
-  text(textoConfirmacao, -cardWidth/2 +300, textoY+20, cardWidth - 20);
+    let textoConfirmacao =
+      (tipoSuper === "like"
+        ? "Conta mais sobre o que você ✨Super Like✨ nesse animal!"
+        : "Conta mais sobre o que você ⚡Super Dislike⚡ nesse animal!") +
+      `\nMas pense bem antes de confirmar, você só tem mais \n ${restantes}` +
+      (tipoSuper === "like" ? " Super Likes" : " Super Dislikes") +
+      " disponíveis!";
 
-    
-    
+    let textoY = tituloOffsetY + 30;
+    text(textoConfirmacao, -cardWidth / 2 + 300, textoY + 20, cardWidth - 20);
+
     pop();
-
-    
-     }
+  }
 }
 
 function mouseDragged() {
@@ -344,7 +334,7 @@ function mouseReleased() {
   }
 }
 
-function gerarGradiente(pg) {
+/*function gerarGradiente(pg) {
   pg.loadPixels();
 
   let c1 = color("#F8F4E8");
@@ -352,9 +342,9 @@ function gerarGradiente(pg) {
 
   for (let y = 0; y < pg.height; y++) {
     for (let x = 0; x < pg.width; x++) {
-      let d = (x + (height - y)) / (width + height);
+      let d = (x + (pg.height - y)) / (pg.width + pg.height);
 
-      let cutoff = 0.3; // Controla o começo da transição (ex; 0.7 = 70%)
+      let cutoff = 0.3;
       let n = d < cutoff ? 0 : pow(map(d, cutoff, 1, 0, 1), 1.5);
 
       let col = lerpColor(c1, c2, n);
@@ -368,6 +358,17 @@ function gerarGradiente(pg) {
   }
 
   pg.updatePixels();
+}*/
+
+function drawGradientBackground() {
+  let ctx = drawingContext; // contexto 2D do canvas p5.js
+  let grad = ctx.createLinearGradient(0, 0, width, height);
+
+  grad.addColorStop(0, '#F8F4E8'); // cor clara
+  grad.addColorStop(1, '#5B7C8C'); // cor escura
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, width, height);
 }
 
 function desenharCaixaComFaixaTitulo(x, y, w, h, titulo) {
@@ -448,126 +449,118 @@ function desenharVotacao() {
 }
 
 function desenharCard(animal) {
-  let cardWidth = 500;
-  let cardHeight = 600;
-  let tituloAltura = 80;
+  let cardWidth = width * 0.4;
+  let cardHeight = height * 0.6;
+  let tituloAltura = cardHeight * 0.13;
   let tituloLargura = cardWidth * 0.7;
 
-  // --- Caixa grande (card do animal) ---
-push();
-rectMode(CORNER);
-fill("#F8F4E8");
-stroke("#1A0D72");
-strokeWeight(2);
+  push();
+  rectMode(CORNER);
+  fill("#F8F4E8");
+  stroke("#1A0D72");
+  strokeWeight(2);
 
-let extraAltura = 80;
-rect(
-  -cardWidth / 2,
-  -cardHeight / 2 + tituloAltura / 2, // topo do card
-  cardWidth,
-  cardHeight + extraAltura            // estica só para baixo
-);
-pop();
+  let extraAltura = cardHeight * 0.13;
+  rect(
+    -cardWidth / 2,
+    -cardHeight / 2 + tituloAltura / 2,
+    cardWidth,
+    cardHeight + extraAltura
+  );
+  pop();
 
-  // --- Caixinha do título ---
+  // Título
   fill("#1A0D72");
   stroke("#1A0D72");
   strokeWeight(2);
   rect(0, -cardHeight / 2 + tituloAltura / 2, tituloLargura, tituloAltura);
 
-  // --- Texto do título (nome comum) ---
   noStroke();
   fill("#C0B9ED");
   textAlign(CENTER, CENTER);
   textStyle(BOLD);
-  textSize(60);
+  textSize(tituloAltura * 0.5);
   text(animal.nameComum, 0, -cardHeight / 2 + tituloAltura / 2);
 
-  // --- Imagem ---
-  if (animal.img) {
-    imageMode(CENTER);
+  // Imagem
+  if (animal.img) {imageMode(CENTER);
     let imagemAltura = cardHeight * 0.6;
     let imagemY = (-cardHeight * 0.05) / 2; // um pequeno ajuste para centralizar melhor
     image(animal.img, 0, imagemY, cardWidth * 0.85, imagemAltura);
   }
 
-  // --- Nome científico ---
+  // Nome científico
   textStyle(ITALIC);
-  textSize(26);
-  text(animal.nameCientifico, 0, cardHeight / 2 - 100);
-  textStyle(NORMAL);
+  textSize(cardHeight * 0.04);
+  text(animal.nameCientifico, 0, cardHeight / 2 - cardHeight * 0.15);
 
-  // ---- Fun Fact ---
+  // Fun fact
   textStyle(NORMAL);
   textAlign(CENTER, TOP);
   textWrap(WORD);
-
-  let curiosidadeY = cardHeight / 2 - 70;
-  let curiosidadeWidth = 440;
   fill("#1A0D72");
 
+  let curiosidadeY = cardHeight / 2 - cardHeight * 0.11;
+  let curiosidadeWidth = cardWidth * 0.88;
+  textSize(cardHeight * 0.035);
   text(animal.curiosidade || "", 0, curiosidadeY, curiosidadeWidth);
 
-  // Tamanho dos botões
-let btnSize = 80;
-let btnY = cardHeight / 2 - 20;
-let btnOffsetX = 320;
+  // Botões
+  let btnSize = min(width, height) * 0.08;
+  let btnY = cardHeight / 2 - btnSize / 2;
+  let btnOffsetX = cardWidth * 0.6;
 
-// Botões (visuais)
-stroke("#1A0D72");
-strokeWeight(2);
-
-// Super Dislike
-if (superDislikesCount < 3) {
-  fill(superDislikeActive ? "#E97474" : "#F1A3A3");
-  rect(-btnOffsetX, btnY, btnSize, btnSize);
-
-  // Quantidade restante
-  noStroke();
-  fill("#1A0D72");
-  textSize(18);
-  textAlign(CENTER, TOP);
-  text(`x ${3 - superDislikesCount}`, -btnOffsetX, btnY + btnSize / 2 + 8);
-}
-
-// Super Like
-if (superLikesCount < 3) {
   stroke("#1A0D72");
-  fill(superLikeActive ? "#A0D468" : "#D0E6A5");
-  rect(btnOffsetX, btnY, btnSize, btnSize);
+  strokeWeight(2);
 
-  // Quantidade restante
-  noStroke();
-  fill("#1A0D72");
-  textSize(18);
-  textAlign(CENTER, TOP);
-  text(`x ${3 - superLikesCount}`, btnOffsetX, btnY + btnSize / 2 + 8);
-}
+  if (superDislikesCount < 3) {
+    fill(superDislikeActive ? "#E97474" : "#F1A3A3");
+    rect(-btnOffsetX, btnY, btnSize, btnSize);
+    noStroke();
+    fill("#1A0D72");
+    textSize(btnSize * 0.25);
+    textAlign(CENTER, TOP);
+    text(`x ${3 - superDislikesCount}`, -btnOffsetX, btnY + btnSize / 2 + 5);
+  }
 
-  // tags
-  
-  if (animal.tags && animal.tags.length > 0) {
-  let startX = - (animal.tags.length - 1) * 70; // espaçamento inicial (ajuste 70 conforme o tamanho)
-  let tagsY = (cardHeight / 2) + 60; // um pouco abaixo da curiosidade, dentro do card
+  if (superLikesCount < 3) {
+    stroke("#1A0D72");
+    fill(superLikeActive ? "#A0D468" : "#D0E6A5");
+    rect(btnOffsetX, btnY, btnSize, btnSize);
+    noStroke();
+    fill("#1A0D72");
+    textSize(btnSize * 0.25);
+    textAlign(CENTER, TOP);
+    text(`x ${3 - superLikesCount}`, btnOffsetX, btnY + btnSize / 2 + 5);
+  }
+
+  // Tags
+if (animal.tags && animal.tags.length > 0) {
+  let tagBoxW = cardWidth * 0.2;
+  let tagBoxH = cardHeight * 0.07;
+  let tagSpacing = tagBoxW + cardWidth * 0.05;
+  let tagsY = cardHeight / 2 + tagBoxH;
+
+  let startX = -((animal.tags.length - 1) * tagSpacing) / 2;
 
   textAlign(CENTER, CENTER);
   textStyle(BOLD);
-  textSize(18);
+  textSize(cardHeight * 0.03);
   fill("#1A0D72");
   noStroke();
 
   animal.tags.forEach((tag, i) => {
-    // Desenha a caixinha arredondada (fundo da tag)
+    let tagX = startX + i * tagSpacing;
     fill("#1A0D72");
-    rect(startX + i * 140, tagsY, 120, 40, 10);
-
-    // Texto da tag
+    rect(tagX, tagsY, tagBoxW, tagBoxH, tagBoxH * 0.25); // borda arredondada proporcional
     fill("#C0B9ED");
-    text(tag, startX + i * 140, tagsY);
+    text(tag, tagX, tagsY);
   });
 }
 
 }
+
+
 
 function vote(direction) {
   let animalName = animals[current].nameComum;
@@ -694,7 +687,6 @@ function cancelarJustificativa() {
 let botaoSim = null;
 let botaoNao = null;
 
-
 function desenharSugestaoFinal() {
   if (!sugestaoInicializada) {
     // Criar inputs e botões
@@ -732,7 +724,7 @@ function desenharSugestaoFinal() {
   }
 
   push();
-  
+
   const caixaW = 360;
   const caixaH = 360;
   const espacamentoX = 100;
@@ -801,7 +793,7 @@ function desenharSugestaoFinal() {
 
   pop();
 
-   desenharMensagemSucesso();
+  desenharMensagemSucesso();
 }
 
 function enviarFavorito() {
@@ -882,16 +874,14 @@ function desenharMensagemSucesso() {
   const faixaAltura = 40;
   fill("#1A0D72");
   noStroke();
-  rect(x , y - faixaAltura*2.5, caixaW-100, faixaAltura);
+  rect(x, y - faixaAltura * 2.5, caixaW - 100, faixaAltura);
 
   // Texto do título
   fill("#C0B9ED");
   textAlign(CENTER, CENTER);
   textStyle(BOLD);
   textSize(20);
-  text(
-    "Enviado com sucesso!",
-    x, y - faixaAltura*2.5, caixaW, faixaAltura  );
+  text("Enviado com sucesso!", x, y - faixaAltura * 2.5, caixaW, faixaAltura);
 
   // Texto explicativo dentro da caixa
   textStyle(NORMAL);
@@ -901,15 +891,14 @@ function desenharMensagemSucesso() {
 
   let textoExplicativo = "";
   if (mensagemSucesso === "favorito" && !enviadoOdiado) {
-    textoExplicativo =
-      "Quer nos contar também o animal que você menos gosta?";
+    textoExplicativo = "Quer nos contar também o animal que você menos gosta?";
   } else if (mensagemSucesso === "odiado" && !enviadoFavorito) {
     textoExplicativo = "Quer nos contar também o animal que você mais gosta?";
   } else {
     textoExplicativo = "Muito obrigado por compartilhar!";
   }
 
-  text(textoExplicativo, x, y-40, caixaW - 40);
+  text(textoExplicativo, x, y - 40, caixaW - 40);
 
   // Criar os botões Sim e Não se ainda não existirem
   if (!botaoSim) {
@@ -948,9 +937,8 @@ function desenharMensagemSucesso() {
     (mensagemSucesso === "favorito" && !enviadoOdiado) ||
     (mensagemSucesso === "odiado" && !enviadoFavorito)
   ) {
-    
-    botaoSim.position(x-180, y+20);
-    botaoNao.position(x+100, y+20);
+    botaoSim.position(x - 180, y + 20);
+    botaoNao.position(x + 100, y + 20);
     botaoSim.show();
     botaoNao.show();
   } else {
@@ -1001,7 +989,6 @@ function pularSugestaoFinal() {
   fetchTopSuperVotes();
 }
 
-
 // ---- RESULTADOS ---- //
 
 function desenharResultados() {
@@ -1014,7 +1001,9 @@ function desenharResultados() {
     textSize(30);
     fill("#1A0D72");
     text(
-      `Sua similaridade com os outros votos é de ${porcentagemSimilaridade.toFixed(1)}%`,
+      `Sua similaridade com os outros votos é de ${porcentagemSimilaridade.toFixed(
+        1
+      )}%`,
       (width * 3.9) / 8,
       (height * 1.4) / 8
     );
@@ -1028,7 +1017,13 @@ function desenharResultados() {
   // --- Caixa: Top Likes ---
   let box1X = (width * 0.5) / 8;
   let box1Y = (height * 2.2) / 8;
-  desenharCaixaComFaixaTitulo(box1X, box1Y, boxWidth, boxHeight, "Top 5 mais curtidos:");
+  desenharCaixaComFaixaTitulo(
+    box1X,
+    box1Y,
+    boxWidth,
+    boxHeight,
+    "Top 5 mais curtidos:"
+  );
   fill(textColor);
   noStroke();
   topLikes.forEach((item, i) => {
@@ -1042,7 +1037,13 @@ function desenharResultados() {
   // --- Caixa: Top Dislikes ---
   let box2X = (width * 3) / 8;
   let box2Y = box1Y;
-  desenharCaixaComFaixaTitulo(box2X, box2Y, boxWidth, boxHeight, "Top 5 mais rejeitados:");
+  desenharCaixaComFaixaTitulo(
+    box2X,
+    box2Y,
+    boxWidth,
+    boxHeight,
+    "Top 5 mais rejeitados:"
+  );
   fill(textColor);
   noStroke();
   topDislikes.forEach((item, i) => {
@@ -1103,7 +1104,6 @@ function desenharResultados() {
 
   textAlign(CENTER, CENTER); // restabelece alinhamento padrão
 }
-
 
 function compararComOutros() {
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes", {
@@ -1191,38 +1191,46 @@ function fetchPaises() {
 }
 
 function fetchTopSuperVotes() {
-  fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_super_likes", {
-    method: "POST",
-    headers: {
-      apikey: KEY,
-      Authorization: KEY_BEARER,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({})  // ← ESSENCIAL
-  })
+  fetch(
+    "https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_super_likes",
+    {
+      method: "POST",
+      headers: {
+        apikey: KEY,
+        Authorization: KEY_BEARER,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({}), // ← ESSENCIAL
+    }
+  )
     .then((res) => res.json())
     .then((data) => {
       topSuperLikes = data;
-          });
+    });
 
-  fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_super_dislikes", {
-    method: "POST",
-    headers: {
-      apikey: KEY,
-      Authorization: KEY_BEARER,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({})  // ← ESSENCIAL
-  })
+  fetch(
+    "https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/top_super_dislikes",
+    {
+      method: "POST",
+      headers: {
+        apikey: KEY,
+        Authorization: KEY_BEARER,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({}), // ← ESSENCIAL
+    }
+  )
     .then((res) => res.json())
     .then((data) => {
       topSuperDislikes = data;
-      
     });
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  //gradienteFundo = createGraphics(windowWidth, windowHeight);
+  //gerarGradiente(gradienteFundo);
 }
+
