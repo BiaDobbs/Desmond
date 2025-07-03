@@ -195,15 +195,14 @@ function setup() {
   botaoCancelar.position(width / 2 - 180, height / 2 + 100);
   botaoCancelar.mousePressed(cancelarJustificativa);
   botaoCancelar.hide();
-  
-  console.log('Canvas size:', width, height);
-console.log('Window size:', windowWidth, windowHeight);
 
+  console.log("Canvas size:", width, height);
+  console.log("Window size:", windowWidth, windowHeight);
 }
 
 function draw() {
   //image(gradienteFundo, 0, 0, width, height);
-  drawGradientBackground()
+  drawGradientBackground();
 
   if (videoEmExibicao) {
     imageMode(CORNER);
@@ -364,8 +363,8 @@ function drawGradientBackground() {
   let ctx = drawingContext; // contexto 2D do canvas p5.js
   let grad = ctx.createLinearGradient(0, 0, width, height);
 
-  grad.addColorStop(0, '#F8F4E8'); // cor clara
-  grad.addColorStop(1, '#5B7C8C'); // cor escura
+  grad.addColorStop(0, "#F8F4E8"); // cor clara
+  grad.addColorStop(1, "#5B7C8C"); // cor escura
 
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, width, height);
@@ -433,7 +432,7 @@ function desenharVotacao() {
   translate(width / 2 + offsetX, height / 2);
 
   rotate(radians(offsetX * 0.05));
-  
+
   desenharCard(animal);
   pop();
 
@@ -451,13 +450,12 @@ function desenharVotacao() {
 }
 
 function desenharCard(animal) {
-  
-    let cardWidth, cardHeight;
+  let cardWidth, cardHeight;
 
   if (windowWidth <= 768) {
     // MOBILE
-    cardHeight = windowHeight * 0.7;
-    cardWidth = cardHeight * 0.8; // proporção mais vertical
+    cardHeight = windowHeight * 0.9; // Agora ocupa 90% da altura da tela
+    cardWidth = cardHeight * 0.75; // Proporção mais vertical
   } else {
     // DESKTOP
     cardWidth = constrain(windowWidth * 0.5, 200, 500);
@@ -466,10 +464,9 @@ function desenharCard(animal) {
 
   let tituloAltura = cardHeight * 0.13;
   let tituloLargura = cardWidth * 0.8;
-                               
-  translate(0, -windowHeight * 0.05);                             
+
   push();
-  
+
   rectMode(CORNER);
   fill("#F8F4E8");
   stroke("#1A0D72");
@@ -498,7 +495,8 @@ function desenharCard(animal) {
   text(animal.nameComum, 0, -cardHeight / 2 + tituloAltura / 2);
 
   // Imagem
-  if (animal.img) {imageMode(CENTER);
+  if (animal.img) {
+    imageMode(CENTER);
     let imagemAltura = cardHeight * 0.6;
     let imagemY = (-cardHeight * 0.05) / 2; // um pequeno ajuste para centralizar melhor
     image(animal.img, 0, imagemY, cardWidth * 0.85, imagemAltura);
@@ -550,32 +548,29 @@ function desenharCard(animal) {
   }
 
   // Tags
-if (animal.tags && animal.tags.length > 0) {
-  let tagBoxW = cardWidth * 0.2;
-  let tagBoxH = cardHeight * 0.07;
-  let tagSpacing = tagBoxW + cardWidth * 0.05;
-  let tagsY = cardHeight / 2 + tagBoxH;
+  if (animal.tags && animal.tags.length > 0) {
+    let tagBoxW = cardWidth * 0.2;
+    let tagBoxH = cardHeight * 0.07;
+    let tagSpacing = tagBoxW + cardWidth * 0.05;
+    let tagsY = cardHeight / 2 + tagBoxH;
 
-  let startX = -((animal.tags.length - 1) * tagSpacing) / 2;
+    let startX = -((animal.tags.length - 1) * tagSpacing) / 2;
 
-  textAlign(CENTER, CENTER);
-  textStyle(BOLD);
-  textSize(cardHeight * 0.03);
-  fill("#1A0D72");
-  noStroke();
-
-  animal.tags.forEach((tag, i) => {
-    let tagX = startX + i * tagSpacing;
+    textAlign(CENTER, CENTER);
+    textStyle(BOLD);
+    textSize(cardHeight * 0.03);
     fill("#1A0D72");
-    rect(tagX, tagsY, tagBoxW, tagBoxH, tagBoxH * 0.25); 
-    fill("#C0B9ED");
-    text(tag, tagX, tagsY);
-  });
+    noStroke();
+
+    animal.tags.forEach((tag, i) => {
+      let tagX = startX + i * tagSpacing;
+      fill("#1A0D72");
+      rect(tagX, tagsY, tagBoxW, tagBoxH, tagBoxH * 0.25);
+      fill("#C0B9ED");
+      text(tag, tagX, tagsY);
+    });
+  }
 }
-
-}
-
-
 
 function vote(direction) {
   let animalName = animals[current].nameComum;
@@ -1248,4 +1243,3 @@ function windowResized() {
   //gradienteFundo = createGraphics(windowWidth, windowHeight);
   //gerarGradiente(gradienteFundo);
 }
-
