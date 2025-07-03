@@ -451,11 +451,13 @@ function desenharVotacao() {
 
 function desenharCard(animal) {
   let cardWidth, cardHeight;
+  
+  isMobile = windowWidth <= 1000;
 
-  if (windowWidth <= 1000) {
+  if (isMobile) {
     // MOBILE
     cardHeight = height * 0.8; // Agora ocupa 90% da altura da tela
-    cardWidth = cardHeight * 0.6; // Proporção mais vertical
+    cardWidth = cardHeight * 0.75; // Proporção mais vertical
   } else {
     // DESKTOP
     cardWidth = constrain(windowWidth * 0.5, 200, 500);
@@ -518,33 +520,63 @@ function desenharCard(animal) {
   textSize(cardHeight * 0.035);
   text(animal.curiosidade || "", 0, curiosidadeY, curiosidadeWidth);
 
-  // Botões
-  let btnSize = min(width, height) * 0.08;
-  let btnY = cardHeight / 2 - btnSize / 2;
-  let btnOffsetX = cardWidth * 0.6;
 
-  stroke("#1A0D72");
-  strokeWeight(2);
+  // --- botões de super‑voto ---
+  let btnSize = cardWidth * 0.15;
 
-  if (superDislikesCount < 3) {
-    fill(superDislikeActive ? "#E97474" : "#F1A3A3");
-    rect(-btnOffsetX, btnY, btnSize, btnSize);
-    noStroke();
-    fill("#1A0D72");
-    textSize(btnSize * 0.25);
-    textAlign(CENTER, TOP);
-    text(`x ${3 - superDislikesCount}`, -btnOffsetX, btnY + btnSize / 2 + 5);
-  }
+  if (isMobile) {
+    // embaixo, centralizados
+    let btnY = cardHeight/2 + btnSize * 0.8;
+    let spacing = btnSize * 1.5;
 
-  if (superLikesCount < 3) {
-    stroke("#1A0D72");
-    fill(superLikeActive ? "#A0D468" : "#D0E6A5");
-    rect(btnOffsetX, btnY, btnSize, btnSize);
-    noStroke();
-    fill("#1A0D72");
-    textSize(btnSize * 0.25);
-    textAlign(CENTER, TOP);
-    text(`x ${3 - superLikesCount}`, btnOffsetX, btnY + btnSize / 2 + 5);
+    // Super‑dislike
+    if (superDislikesCount < 3) {
+      stroke("#1A0D72"); strokeWeight(2);
+      fill(superDislikeActive ? "#E97474" : "#F1A3A3");
+      rect(-spacing/2, btnY, btnSize, btnSize);
+
+      noStroke(); fill("#1A0D72");
+      textSize(btnSize*0.25); textAlign(CENTER, TOP);
+      text(`x ${3-superDislikesCount}`, -spacing/2, btnY+btnSize/2+4);
+    }
+
+    // Super‑like
+    if (superLikesCount < 3) {
+      stroke("#1A0D72"); strokeWeight(2);
+      fill(superLikeActive ? "#A0D468" : "#D0E6A5");
+      rect(spacing/2, btnY, btnSize, btnSize);
+
+      noStroke(); fill("#1A0D72");
+      textSize(btnSize*0.25); textAlign(CENTER, TOP);
+      text(`x ${3-superLikesCount}`, spacing/2, btnY+btnSize/2+4);
+    }
+
+  } else {
+    // desktop, como você já tinha
+    let btnY = cardHeight/2 - btnSize*0.6;
+    let btnOffsetX = cardWidth * 0.45;
+
+    // Super‑dislike (à esquerda)
+    if (superDislikesCount < 3) {
+      stroke("#1A0D72"); strokeWeight(2);
+      fill(superDislikeActive ? "#E97474" : "#F1A3A3");
+      rect(-btnOffsetX, btnY, btnSize, btnSize);
+
+      noStroke(); fill("#1A0D72");
+      textSize(btnSize*0.25); textAlign(CENTER, TOP);
+      text(`x ${3-superDislikesCount}`, -btnOffsetX, btnY+btnSize/2+4);
+    }
+
+    // Super‑like (à direita)
+    if (superLikesCount < 3) {
+      stroke("#1A0D72"); strokeWeight(2);
+      fill(superLikeActive ? "#A0D468" : "#D0E6A5");
+      rect(btnOffsetX, btnY, btnSize, btnSize);
+
+      noStroke(); fill("#1A0D72");
+      textSize(btnSize*0.25); textAlign(CENTER, TOP);
+      text(`x ${3-superLikesCount}`, btnOffsetX, btnY+btnSize/2+4);
+    }
   }
 
   // Tags
