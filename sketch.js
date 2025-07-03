@@ -456,8 +456,8 @@ function desenharCard(animal) {
 
   if (isMobile) {
     // MOBILE
-    cardHeight = height * 0.8; // Agora ocupa 90% da altura da tela
-    cardWidth = cardHeight * 0.75; // Proporção mais vertical
+    cardHeight = height * 0.4; 
+    cardWidth = cardHeight * 0.75; 
   } else {
     // DESKTOP
     cardWidth = constrain(windowWidth * 0.5, 200, 500);
@@ -526,8 +526,8 @@ function desenharCard(animal) {
 
   if (isMobile) {
     // embaixo, centralizados
-    let btnY = cardHeight/2 + btnSize * 0.8;
-    let spacing = btnSize * 1.5;
+    let btnY = cardHeight/2 + btnSize * 1.5;
+    let spacing = btnSize * 2;
 
     // Super‑dislike
     if (superDislikesCount < 3) {
