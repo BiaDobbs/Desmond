@@ -452,7 +452,7 @@ function desenharVotacao() {
 function desenharCard(animal) {
   let cardWidth, cardHeight;
 
-  if (windowWidth <= 768) {
+  if (windowWidth <= 1000) {
     // MOBILE
     cardHeight = height * 0.9; // Agora ocupa 90% da altura da tela
     cardWidth = cardHeight * 0.75; // Proporção mais vertical
