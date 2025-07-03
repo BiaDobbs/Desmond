@@ -454,7 +454,7 @@ function desenharCard(animal) {
 
   if (windowWidth <= 768) {
     // MOBILE
-    cardHeight = windowHeight * 0.9; // Agora ocupa 90% da altura da tela
+    cardHeight = height * 0.9; // Agora ocupa 90% da altura da tela
     cardWidth = cardHeight * 0.75; // Proporção mais vertical
   } else {
     // DESKTOP
