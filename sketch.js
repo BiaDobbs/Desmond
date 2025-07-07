@@ -1,6 +1,9 @@
 let modoDev = false; // pular votação
 let tela = "votacao"; // votacao, sugestao ou resultado
 
+let isMobile;
+
+  
 let coresGenially = [
   "#F8F4E8",
   "#EDE7CF",
@@ -122,6 +125,8 @@ let tempoMensagemSucesso = 0;
 let enviadoFavorito = false;
 let enviadoOdiado = false;
 
+
+
 function preload() {
   fetchPaises();
   animals.forEach((animal) => {
@@ -146,6 +151,8 @@ function setup() {
   textAlign(CENTER, CENTER);
   textSize(32);
   rectMode(CENTER);
+  isMobile = windowWidth <= 1000;
+  
 
   userId = localStorage.getItem("user_id");
   if (!userId) {
@@ -291,73 +298,105 @@ function mouseDragged() {
 }
 
 function mouseReleased() {
+  if (tela !== 'votacao' || caixaJustificativaVisivel) return;
+
+  // swipe normal
   if (offsetX > 150) {
     vote("right");
+    return;
   } else if (offsetX < -150) {
     vote("left");
+    return;
   } else {
     offsetX = 0;
   }
 
-  if (tela !== "votacao") return;
 
-  let btnSize = 80;
-  let btnY = height / 2 + 600 / 2 - 20; // match com desenharCard (cardHeight / 2 - 20)
-  let btnOffsetX = 320;
 
-  // Verifica clique Super Like
-  if (
-    mouseX >= width / 2 - btnOffsetX - btnSize / 2 &&
-    mouseX <= width / 2 - btnOffsetX + btnSize / 2 &&
-    mouseY >= btnY - btnSize / 2 &&
-    mouseY <= btnY + btnSize / 2 &&
-    superLikesCount < 3
-  ) {
-    superLikeActive = true;
-    mostrarCaixaJustificativa("like");
+  // os mesmos tamanhos usados em desenharCard()
+  let cardWidth, cardHeight;
+  if (isMobile) {
+    cardHeight = height * 0.6;
+    cardWidth = cardHeight * 0.75;
+  } else {
+    cardWidth = constrain(windowWidth * 0.5, 200, 500);
+    cardHeight = cardWidth * 1.1;
+  }
+  let btnSize = cardWidth * 0.15;
 
-    return;
+  // ⚠️ coordenadas do mouse relativas ao centro
+  let dx = mouseX - width / 2;
+  let dy = mouseY - height / 2;
+
+  // ⚠️ compensar o translate(0, -windowHeight * 0.05) no mobile
+  if (isMobile) {
+    dy += windowHeight * 0.05;
   }
 
-  // Verifica clique Super Dislike
-  if (
-    mouseX >= width / 2 + btnOffsetX - btnSize / 2 &&
-    mouseX <= width / 2 + btnOffsetX + btnSize / 2 &&
-    mouseY >= btnY - btnSize / 2 &&
-    mouseY <= btnY + btnSize / 2 &&
-    superDislikesCount < 3
-  ) {
-    superDislikeActive = true;
-    mostrarCaixaJustificativa("dislike");
-    return;
+  if (isMobile) {
+    let btnY = cardHeight / 2 + btnSize * 2;
+    let spacing = btnSize * 2;
+
+    // botão dislike (esquerda)
+    let bxDislike = -spacing / 2;
+    if (
+      dx >= bxDislike - btnSize / 2 &&
+      dx <= bxDislike + btnSize / 2 &&
+      dy >= btnY - btnSize / 2 &&
+      dy <= btnY + btnSize / 2 &&
+      superDislikesCount < 3
+    ) {
+      superDislikeActive = true;
+      mostrarCaixaJustificativa("dislike");
+      return;
+    }
+
+    // botão like (direita)
+    let bxLike = spacing / 2;
+    if (
+      dx >= bxLike - btnSize / 2 &&
+      dx <= bxLike + btnSize / 2 &&
+      dy >= btnY - btnSize / 2 &&
+      dy <= btnY + btnSize / 2 &&
+      superLikesCount < 3
+    ) {
+      superLikeActive = true;
+      mostrarCaixaJustificativa("like");
+      return;
+    }
+  } else {
+    let btnY = cardHeight / 2 - btnSize * 0.6;
+    let btnOffsetX = cardWidth * 0.45;
+
+    let bxDislike = -btnOffsetX;
+    if (
+      dx >= bxDislike - btnSize / 2 &&
+      dx <= bxDislike + btnSize / 2 &&
+      dy >= btnY - btnSize / 2 &&
+      dy <= btnY + btnSize / 2 &&
+      superDislikesCount < 3
+    ) {
+      superDislikeActive = true;
+      mostrarCaixaJustificativa("dislike");
+      return;
+    }
+
+    let bxLike = btnOffsetX;
+    if (
+      dx >= bxLike - btnSize / 2 &&
+      dx <= bxLike + btnSize / 2 &&
+      dy >= btnY - btnSize / 2 &&
+      dy <= btnY + btnSize / 2 &&
+      superLikesCount < 3
+    ) {
+      superLikeActive = true;
+      mostrarCaixaJustificativa("like");
+      return;
+    }
   }
 }
 
-/*function gerarGradiente(pg) {
-  pg.loadPixels();
 
-  let c1 = color("#F8F4E8");
-  let c2 = color("#5B7C8C");
-
-  for (let y = 0; y < pg.height; y++) {
-    for (let x = 0; x < pg.width; x++) {
-      let d = (x + (pg.height - y)) / (pg.width + pg.height);
-
-      let cutoff = 0.3;
-      let n = d < cutoff ? 0 : pow(map(d, cutoff, 1, 0, 1), 1.5);
-
-      let col = lerpColor(c1, c2, n);
-
-      let index = (x + y * pg.width) * 4;
-      pg.pixels[index + 0] = red(col);
-      pg.pixels[index + 1] = green(col);
-      pg.pixels[index + 2] = blue(col);
-      pg.pixels[index + 3] = 255;
-    }
-  }
-
-  pg.updatePixels();
-}*/
 
 function drawGradientBackground() {
   let ctx = drawingContext; // contexto 2D do canvas p5.js
@@ -381,7 +420,7 @@ function desenharCaixaComFaixaTitulo(x, y, w, h, titulo) {
   let faixaAltura = 40;
   let faixaLargura = textWidth(titulo) + 40;
   let faixaX = x + (w - faixaLargura) / 2;
-  let faixaY = y - faixaAltura / 2; // corrigido: baseado em canto superior da caixa
+  let faixaY = y - faixaAltura / 2; 
 
   fill(borderColor);
   noStroke();
@@ -412,10 +451,7 @@ function desenharVotacao() {
   }
 
   if (current >= animals.length) {
-    tela = "resultado";
-    fetchTopVotes();
-    fetchPaises();
-    fetchTopSuperVotes();
+    tela = "sugestao";
     return;
   }
 
@@ -444,20 +480,20 @@ function desenharVotacao() {
     textSize(size);
     fill(offsetX > 0 ? color(0, 200, 0, alpha) : color(255, 0, 0, alpha));
     textAlign(CENTER, CENTER);
-    text(offsetX > 0 ? "❤️" : "❌", width / 2, height / 2 - 380);
+    text(offsetX > 0 ? "❤️" : "❌", width / 2, height / 2-40);
     pop();
   }
 }
 
 function desenharCard(animal) {
   let cardWidth, cardHeight;
-  
-  isMobile = windowWidth <= 1000;
+
 
   if (isMobile) {
     // MOBILE
     cardHeight = height * 0.6; 
     cardWidth = cardHeight * 0.75; 
+    translate(0, -windowHeight * 0.05);
   } else {
     // DESKTOP
     cardWidth = constrain(windowWidth * 0.5, 200, 500);
@@ -466,6 +502,8 @@ function desenharCard(animal) {
 
   let tituloAltura = cardHeight * 0.13;
   let tituloLargura = cardWidth * 0.8;
+  
+  
 
   push();
 
@@ -526,7 +564,7 @@ function desenharCard(animal) {
 
   if (isMobile) {
     // embaixo, centralizados
-    let btnY = cardHeight/2 + btnSize * 1.5;
+    let btnY = cardHeight/2 + btnSize * 2;
     let spacing = btnSize * 2;
 
     // Super‑dislike
@@ -730,32 +768,60 @@ let botaoSim = null;
 let botaoNao = null;
 
 function desenharSugestaoFinal() {
+  const isMobile = windowWidth < 1000;
+  const caixaW = isMobile ? 300 : 360;
+  const caixaH = isMobile ? 280 : 360;
+  const espacamentoY = isMobile ? 60 : 40;
+  const espacamentoX = isMobile ? 0 : 100;
+
   if (!sugestaoInicializada) {
-    // Criar inputs e botões
-    inputFavorito = createInput("");
-    //inputFavorito.attribute("placeholder", "Qual é o seu animal favorito?");
-    inputFavorito.position(width / 2 - 425, height / 2 + 60);
-    inputFavorito.size(300, 50);
-    inputFavorito.class("input-padrao");
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-    inputOdiado = createInput("");
-    //inputOdiado.attribute("placeholder", "Qual é o animal que você menos gosta?");
-    inputOdiado.position(width / 2 + 130, height / 2 + 60);
-    inputOdiado.size(300, 50);
-    inputOdiado.class("input-padrao");
+    if (isMobile) {
+      inputFavorito = createInput("");
+      inputFavorito.position(centerX - caixaW / 2, centerY + 60);
+      inputFavorito.size(caixaW - 40, 45);
+      inputFavorito.class("input-padrao");
 
-    botaoEnviarFavorito = createButton("Enviar favorito");
-    botaoEnviarFavorito.position(width / 2 - 360, height / 2 + 150);
-    botaoEnviarFavorito.class("botao-padrao");
-    botaoEnviarFavorito.mousePressed(enviarFavorito);
+      inputOdiado = createInput("");
+      inputOdiado.position(centerX - caixaW / 2, centerY + caixaH + espacamentoY + 60);
+      inputOdiado.size(caixaW - 40, 45);
+      inputOdiado.class("input-padrao");
 
-    botaoEnviarOdiado = createButton("Enviar odiado");
-    botaoEnviarOdiado.position(width / 2 + 210, height / 2 + 150);
-    botaoEnviarOdiado.class("botao-padrao");
-    botaoEnviarOdiado.mousePressed(enviarOdiado);
+      botaoEnviarFavorito = createButton("Enviar favorito");
+      botaoEnviarFavorito.position(centerX - caixaW / 2, centerY + 130);
+      botaoEnviarFavorito.class("botao-padrao");
+      botaoEnviarFavorito.mousePressed(enviarFavorito);
+
+      botaoEnviarOdiado = createButton("Enviar odiado");
+      botaoEnviarOdiado.position(centerX - caixaW / 2, centerY + caixaH + espacamentoY + 130);
+      botaoEnviarOdiado.class("botao-padrao");
+      botaoEnviarOdiado.mousePressed(enviarOdiado);
+    } else {
+      inputFavorito = createInput("");
+      inputFavorito.position(width / 2 - caixaW - espacamentoX / 2 + 30, height / 2 + 60);
+      inputFavorito.size(caixaW - 60, 50);
+      inputFavorito.class("input-padrao");
+
+      inputOdiado = createInput("");
+      inputOdiado.position(width / 2 + espacamentoX / 2 + 30, height / 2 + 60);
+      inputOdiado.size(caixaW - 60, 50);
+      inputOdiado.class("input-padrao");
+
+      botaoEnviarFavorito = createButton("Enviar favorito");
+      botaoEnviarFavorito.position(width / 2 - caixaW - espacamentoX / 2 + 30, height / 2 + 150);
+      botaoEnviarFavorito.class("botao-padrao");
+      botaoEnviarFavorito.mousePressed(enviarFavorito);
+
+      botaoEnviarOdiado = createButton("Enviar odiado");
+      botaoEnviarOdiado.position(width / 2 + espacamentoX / 2 + 30, height / 2 + 150);
+      botaoEnviarOdiado.class("botao-padrao");
+      botaoEnviarOdiado.mousePressed(enviarOdiado);
+    }
 
     botaoPular = createButton("Não quero escrever, pular para os resultados");
-    botaoPular.position(width / 2 - 200, height / 2 + 300);
+    botaoPular.position(width / 2 - 200, height - 100);
     botaoPular.class("botao-padrao");
     botaoPular.mousePressed(() => {
       pularSugestaoFinal();
@@ -766,77 +832,58 @@ function desenharSugestaoFinal() {
   }
 
   push();
-
-  const caixaW = 360;
-  const caixaH = 360;
-  const espacamentoX = 100;
-
-  // Favorito
-  const x1 = width / 2 - caixaW / 2 - espacamentoX;
-  const y1 = height / 2 + 40;
-
-  stroke("#1A0D72");
-  strokeWeight(2);
-  fill("#F8F4E8");
-  rect(x1, y1, caixaW, caixaH);
-
-  // Título favorito
-  fill("#1A0D72");
-  noStroke();
-  rect(x1, y1 - caixaH / 2, 300, 50);
-
-  fill("#C0B9ED");
-  textAlign(CENTER, CENTER);
-  textStyle(BOLD);
-  textSize(22);
-  text("Animal que Mais Gosta", x1, y1 - caixaH / 2);
-
-  // Texto explicativo
-  textStyle(NORMAL);
-  fill("#1A0D72");
   textAlign(CENTER, TOP);
-  textSize(20);
-  text(
-    "Para terminar, quer falar o animal que você mais gosta? Pode ser algum que não estava na lista!",
-    x1,
-    y1 - 120,
-    300
-  );
-
-  // Odiado
-  const x2 = width / 2 + caixaW / 2 + espacamentoX;
-  const y2 = height / 2 + 40;
-
-  stroke("#1A0D72");
-  strokeWeight(2);
-  fill("#F8F4E8");
-  rect(x2, y2, caixaW, caixaH);
-
-  fill("#1A0D72");
-  noStroke();
-  rect(x2, y2 - caixaH / 2, 300, 50);
-
-  fill("#C0B9ED");
-  textAlign(CENTER, CENTER);
-  textStyle(BOLD);
-  textSize(22);
-  text("Animal que Menos Gosta", x2, y2 - caixaH / 2);
-
   textStyle(NORMAL);
+  textSize(18);
   fill("#1A0D72");
-  textAlign(CENTER, TOP);
-  textSize(20);
-  text(
-    "Para terminar, quer falar o animal que você menos gosta?\nPode ser algum que não estava na lista!",
-    x2,
-    y2 - 120,
-    300
-  );
+
+  const centerX = width / 2;
+  let yFavorito = height / 2;
+  let yOdiado = isMobile ? yFavorito + caixaH + espacamentoY : yFavorito;
+
+  // Caixa favorito
+  drawBox(centerX, yFavorito, caixaW, caixaH, "Animal que Mais Gosta",
+    "Para terminar, quer falar o animal que você mais gosta?\nPode ser algum que não estava na lista!");
+
+  // Caixa odiado
+  if (isMobile) {
+    drawBox(centerX, yOdiado, caixaW, caixaH, "Animal que Menos Gosta",
+      "E qual o animal que você menos gosta?\nPode ser algum que não estava na lista!");
+  } else {
+    drawBox(centerX + caixaW + espacamentoX, yOdiado, caixaW, caixaH, "Animal que Menos Gosta",
+      "Para terminar, quer falar o animal que você menos gosta?\nPode ser algum que não estava na lista!");
+  }
 
   pop();
 
   desenharMensagemSucesso();
 }
+
+function drawBox(x, y, w, h, titulo, textoExplicativo) {
+  stroke("#1A0D72");
+  strokeWeight(2);
+  fill("#F8F4E8");
+  rect(x, y, w, h);
+
+  // Faixa título
+  fill("#1A0D72");
+  noStroke();
+  rect(x, y - h / 2, w * 0.85, 50);
+
+  fill("#C0B9ED");
+  textAlign(CENTER, CENTER);
+  textStyle(BOLD);
+  textSize(22);
+  text(titulo, x, y - h / 2);
+
+  // Texto explicativo
+  textStyle(NORMAL);
+  fill("#1A0D72");
+  textAlign(CENTER, TOP);
+  textSize(18);
+  text(textoExplicativo, x, y - h / 2 + 60, w * 0.85);
+}
+
 
 function enviarFavorito() {
   let texto = inputFavorito.value().trim();
