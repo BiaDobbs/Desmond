@@ -42,19 +42,7 @@ const UI = {
 };
 
 const SUPABASE_URL = "https://baxlrnntxtetxqpxdyyx.supabase.co";
-let supabaseClient = null;
-if (window.supabase) {
-  supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
-} else {
-  console.warn('Supabase ainda não carregou; inicializando mais tarde.');
-  window.addEventListener('load', () => {
-    if (window.supabase) {
-      supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
-    } else {
-      console.error('Supabase não disponível após load.');
-    }
-  });
-}
+const supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
 
 const STATE = {
   modoDev: false,
@@ -97,7 +85,7 @@ function getUserId() {
 }
 
 function fetchCountryCode() {
-   fetch("https://ipapi.co/json/")
+  fetch("https://ipapi.co/json/")
     .then((res) => res.json())
     .then((data) => {
       console.log("fetchCountryCode retornou:", data.country_code);
@@ -140,7 +128,7 @@ function setup() {
   STATE.userId = getUserId();
   initializePlayerInfo();
   fetchCountryCode();
-  
+
   if (STATE.modoDev) {
     UI.tela = "resultado";
     STATE.ended = true;
@@ -342,7 +330,6 @@ function desenharTutorial() {
       mostrarCaixaJustificativa("like", true);
     }
     if (passoAtual.previewStickers) {
-      
     }
 
     pop();
@@ -448,7 +435,7 @@ function desenharBotoesAnimadosTutorial() {
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
       rect(0, 0, btnSize, btnSize);
-      
+
       pop();
     }
   }
@@ -1088,9 +1075,10 @@ function desenharCard(animal) {
 }
 
 function vote(direction) {
-  let animalName = STATE.animals[STATE.current].nameComum;
+  let animalAtual = STATE.animals[STATE.current];
+  let animalName = animalAtual.nameComum_pt;
   console.log("Vote chamado. countryCode atual:", STATE.countryCode);
-  
+
   if (!STATE.countryCode) {
     console.warn("País desconhecido - voto não enviado.");
     STATE.offsetX = 0;
@@ -1100,14 +1088,16 @@ function vote(direction) {
 
   // Verifica se as informações do jogador existem
   if (!STATE.playerInfo) {
-    console.warn("Informações do jogador não encontradas - usando valores padrão.");
+    console.warn(
+      "Informações do jogador não encontradas - usando valores padrão."
+    );
     STATE.playerInfo = {
       nacionalidade: "Não informado",
       idade: null,
-      genero: "Não informado"
+      genero: "Não informado",
     };
   }
-  
+
   // Prepara o corpo da requisição com as informações do jogador
   const requestBody = {
     user_id: STATE.userId,
@@ -1118,7 +1108,7 @@ function vote(direction) {
     // Adiciona as novas colunas
     nacionalidade: STATE.playerInfo.nacionalidade,
     idade: STATE.playerInfo.idade,
-    genero: STATE.playerInfo.genero
+    genero: STATE.playerInfo.genero,
   };
 
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/likes_and_dislikes", {
@@ -1383,10 +1373,10 @@ function enviarJustificativa() {
 
   let texto = UI.caixaInput.value().trim();
   if (texto.length === 0) return;
-  
+
   let currentAnimal = STATE.animals[STATE.current];
   if (!currentAnimal) return;
-  
+
   const tipoAtual = UI.tipoSuper;
   const videoAtual = tipoAtual === "like" ? UI.videoLike : UI.videoDislike;
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/super_votes", {
@@ -1909,13 +1899,13 @@ function desenharResultados() {
   // Detecta o tipo de dispositivo
   const isMobile = width < 768;
   const isTablet = width >= 768 && width < 1024;
-  
+
   // Header principal
   desenharHeader();
-  
+
   // Layout responsivo
   let startY = height * 0.15;
-  
+
   if (isMobile) {
     desenharLayoutMobile(startY);
   } else if (isTablet) {
@@ -1928,19 +1918,24 @@ function desenharResultados() {
 // Header com título e similaridade
 function desenharHeader() {
   textAlign(CENTER, CENTER);
-  
+
   // Título principal
   let titleSize = width < 768 ? 24 : width < 1024 ? 32 : 40;
   textSize(titleSize);
   fill(CONFIG.borderColor);
   text("Obrigada por votar!", width / 2, height * 0.06);
-  
+
   // Porcentagem de similaridade
-  if (STATE.porcentagemSimilaridade !== null && !isNaN(STATE.porcentagemSimilaridade)) {
+  if (
+    STATE.porcentagemSimilaridade !== null &&
+    !isNaN(STATE.porcentagemSimilaridade)
+  ) {
     let subtitleSize = width < 768 ? 16 : width < 1024 ? 20 : 24;
     textSize(subtitleSize);
     text(
-      `Sua similaridade com os outros votos é de ${STATE.porcentagemSimilaridade.toFixed(1)}%`,
+      `Sua similaridade com os outros votos é de ${STATE.porcentagemSimilaridade.toFixed(
+        1
+      )}%`,
       width / 2,
       height * 0.1
     );
@@ -1952,19 +1947,19 @@ function desenharLayoutMobile(startY) {
   let boxWidth = width * 0.9;
   let x = width * 0.05;
   let currentY = startY;
-  
+
   currentY = desenharCaixaTopLikes(x, currentY, boxWidth);
   currentY += 30;
-  
+
   currentY = desenharCaixaTopDislikes(x, currentY, boxWidth);
   currentY += 30;
-  
+
   currentY = desenharCaixaOrigemVotos(x, currentY, boxWidth);
   currentY += 30;
-  
+
   currentY = desenharCaixaNacionalidadeVotos(x, currentY, boxWidth);
   currentY += 30;
-  
+
   desenharCaixaSuperVotos(x, currentY, boxWidth);
 }
 
@@ -1974,23 +1969,23 @@ function desenharLayoutTablet(startY) {
   let spacing = width * 0.04;
   let col1X = spacing;
   let col2X = width / 2 + spacing / 2;
-  
+
   // Primeira linha - Top Likes e Top Dislikes
   let row1Height = max(
     desenharCaixaTopLikes(col1X, startY, boxWidth),
     desenharCaixaTopDislikes(col2X, startY, boxWidth)
   );
-  
+
   let currentY = row1Height + 30;
-  
+
   // Segunda linha - Origem e Nacionalidade
   let row2Height = max(
     desenharCaixaOrigemVotos(col1X, currentY, boxWidth),
     desenharCaixaNacionalidadeVotos(col2X, currentY, boxWidth)
   );
-  
+
   currentY = row2Height + 30;
-  
+
   // Terceira linha - Super Votos ocupando largura total
   desenharCaixaSuperVotos(spacing, currentY, width - spacing * 2);
 }
@@ -2000,12 +1995,12 @@ function desenharLayoutDesktop(startY) {
   let numCols = 4;
   let spacing = width * 0.02;
   let boxWidth = (width - spacing * (numCols + 1)) / numCols;
-  
+
   let col1X = spacing;
   let col2X = spacing + boxWidth + spacing;
   let col3X = spacing + (boxWidth + spacing) * 2;
   let col4X = spacing + (boxWidth + spacing) * 3;
-  
+
   // Primeira linha - 4 caixas
   let row1Height = max(
     desenharCaixaTopLikes(col1X, startY, boxWidth),
@@ -2013,9 +2008,9 @@ function desenharLayoutDesktop(startY) {
     desenharCaixaOrigemVotos(col3X, startY, boxWidth),
     desenharCaixaNacionalidadeVotos(col4X, startY, boxWidth)
   );
-  
+
   let currentY = row1Height + 40;
-  
+
   // Segunda linha - Super Votos centralizado
   let superWidth = boxWidth * 2;
   let superX = (width - superWidth) / 2;
@@ -2028,27 +2023,27 @@ function desenharCaixaTopLikes(x, y, boxWidth) {
   let itemHeight = 45;
   let padding = 25;
   let boxHeight = items.length * itemHeight + padding * 2;
-  
+
   // Desenha a caixa
   desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 mais curtidos:");
-  
+
   // Desenha os itens
   fill(CONFIG.textColor);
   noStroke();
   textAlign(CENTER, CENTER);
-  
+
   items.forEach((item, i) => {
     let texto = `${item.animal} (${item.total} votos)`;
     let textY = y + padding + (i + 0.5) * itemHeight;
-    
+
     // Calcula tamanho do texto que caiba na largura
     let maxWidth = boxWidth * 0.85;
     let fontSize = calcularTamanhoTexto(texto, maxWidth, itemHeight * 0.7);
-    
+
     textSize(fontSize);
     text(texto, x + boxWidth / 2, textY);
   });
-  
+
   return y + boxHeight;
 }
 
@@ -2058,27 +2053,27 @@ function desenharCaixaTopDislikes(x, y, boxWidth) {
   let itemHeight = 45;
   let padding = 25;
   let boxHeight = items.length * itemHeight + padding * 2;
-  
+
   // Desenha a caixa
   desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 mais rejeitados:");
-  
+
   // Desenha os itens
   fill(CONFIG.textColor);
   noStroke();
   textAlign(CENTER, CENTER);
-  
+
   items.forEach((item, i) => {
     let texto = `${item.animal} (${item.total} votos)`;
     let textY = y + padding + (i + 0.5) * itemHeight;
-    
+
     // Calcula tamanho do texto que caiba na largura
     let maxWidth = boxWidth * 0.85;
     let fontSize = calcularTamanhoTexto(texto, maxWidth, itemHeight * 0.7);
-    
+
     textSize(fontSize);
     text(texto, x + boxWidth / 2, textY);
   });
-  
+
   return y + boxHeight;
 }
 
@@ -2088,34 +2083,34 @@ function desenharCaixaOrigemVotos(x, y, boxWidth) {
   let itemHeight = 50;
   let padding = 25;
   let boxHeight = paises.length * itemHeight + padding * 2;
-  
+
   // Desenha a caixa
   desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Origem dos votos:");
-  
+
   // Desenha os países
   fill(CONFIG.textColor);
   noStroke();
   textAlign(LEFT, CENTER);
-  
+
   paises.forEach((p, i) => {
     let codigo = p.country ? p.country.toLowerCase() : "unknown";
     let bandeira = STATE.bandeiras[codigo] || STATE.bandeiras["unknown"];
     let textY = y + padding + (i + 0.5) * itemHeight;
-    
+
     // Desenha bandeira
     if (bandeira) {
       image(bandeira, x + 20, textY - 12, 32, 24);
     }
-    
+
     // Desenha texto do país
     let texto = `${p.country} (${p.total})`;
     let maxWidth = boxWidth - 80; // Espaço para bandeira e margens
     let fontSize = calcularTamanhoTexto(texto, maxWidth, itemHeight * 0.6);
-    
+
     textSize(fontSize);
     text(texto, x + 60, textY);
   });
-  
+
   return y + boxHeight;
 }
 
@@ -2125,34 +2120,34 @@ function desenharCaixaNacionalidadeVotos(x, y, boxWidth) {
   let itemHeight = 50;
   let padding = 25;
   let boxHeight = nacionalidades.length * itemHeight + padding * 2;
-  
+
   // Desenha a caixa
   desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Nacionalidade dos votos:");
-  
+
   // Desenha as nacionalidades
   fill(CONFIG.textColor);
   noStroke();
   textAlign(LEFT, CENTER);
-  
+
   nacionalidades.forEach((n, i) => {
     let codigo = n.nacionalidade ? n.nacionalidade.toLowerCase() : "unknown";
     let bandeira = STATE.bandeiras[codigo] || STATE.bandeiras["unknown"];
     let textY = y + padding + (i + 0.5) * itemHeight;
-    
+
     // Desenha bandeira
     if (bandeira) {
       image(bandeira, x + 20, textY - 12, 32, 24);
     }
-    
+
     // Desenha texto da nacionalidade
     let texto = `${n.nacionalidade} (${n.total})`;
     let maxWidth = boxWidth - 80; // Espaço para bandeira e margens
     let fontSize = calcularTamanhoTexto(texto, maxWidth, itemHeight * 0.6);
-    
+
     textSize(fontSize);
     text(texto, x + 60, textY);
   });
-  
+
   return y + boxHeight;
 }
 
@@ -2161,40 +2156,48 @@ function desenharCaixaSuperVotos(x, y, boxWidth) {
   let superLikes = STATE.topSuperLikes || [];
   let superDislikes = STATE.topSuperDislikes || [];
   let maxItems = max(superLikes.length, superDislikes.length);
-  
+
   let itemHeight = 45;
   let padding = 25;
   let boxHeight = maxItems * itemHeight + padding * 2;
-  
+
   // Desenha a caixa
   desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 Super Votados:");
-  
+
   fill(CONFIG.textColor);
   noStroke();
   textAlign(LEFT, CENTER);
-  
+
   let colWidth = (boxWidth - 60) / 2; // Duas colunas
-  
+
   // Super Likes (coluna esquerda)
   superLikes.forEach((item, i) => {
     let texto = `💖 ${item.animal} (${item.total})`;
     let textY = y + padding + (i + 0.5) * itemHeight;
-    let fontSize = calcularTamanhoTexto(texto, colWidth * 0.9, itemHeight * 0.6);
-    
+    let fontSize = calcularTamanhoTexto(
+      texto,
+      colWidth * 0.9,
+      itemHeight * 0.6
+    );
+
     textSize(fontSize);
     text(texto, x + 20, textY);
   });
-  
+
   // Super Dislikes (coluna direita)
   superDislikes.forEach((item, i) => {
     let texto = `💔 ${item.animal} (${item.total})`;
     let textY = y + padding + (i + 0.5) * itemHeight;
-    let fontSize = calcularTamanhoTexto(texto, colWidth * 0.9, itemHeight * 0.6);
-    
+    let fontSize = calcularTamanhoTexto(
+      texto,
+      colWidth * 0.9,
+      itemHeight * 0.6
+    );
+
     textSize(fontSize);
     text(texto, x + colWidth + 40, textY);
   });
-  
+
   return y + boxHeight;
 }
 
@@ -2202,13 +2205,13 @@ function desenharCaixaSuperVotos(x, y, boxWidth) {
 function calcularTamanhoTexto(texto, maxWidth, maxHeight) {
   let fontSize = maxHeight;
   textSize(fontSize);
-  
+
   // Reduz o tamanho até caber na largura
   while (textWidth(texto) > maxWidth && fontSize > 8) {
     fontSize -= 0.5;
     textSize(fontSize);
   }
-  
+
   return max(fontSize, 8); // Tamanho mínimo de 8px
 }
 
@@ -2219,23 +2222,27 @@ function desenharCaixaComTitulo(x, y, w, h, titulo) {
   stroke(CONFIG.borderColor);
   strokeWeight(2);
   rect(x, y, w, h);
-  
+
   // Faixa do título
   let faixaAltura = 35;
   let faixaLargura = min(textWidth(titulo) + 30, w * 0.8);
   let faixaX = x + (w - faixaLargura) / 2;
   let faixaY = y - faixaAltura / 2;
-  
+
   fill(CONFIG.borderColor);
   noStroke();
   rect(faixaX, faixaY, faixaLargura, faixaAltura);
-  
+
   // Texto do título
   fill("#C0B9ED");
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
-  
-  let titleSize = calcularTamanhoTexto(titulo, faixaLargura * 0.9, faixaAltura * 0.6);
+
+  let titleSize = calcularTamanhoTexto(
+    titulo,
+    faixaLargura * 0.9,
+    faixaAltura * 0.6
+  );
   textSize(titleSize);
   text(titulo, faixaX + faixaLargura / 2, faixaY + faixaAltura / 2);
   textStyle(NORMAL);
