@@ -42,7 +42,19 @@ const UI = {
 };
 
 const SUPABASE_URL = "https://baxlrnntxtetxqpxdyyx.supabase.co";
-const supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
+let supabaseClient = null;
+if (window.supabase) {
+  supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
+} else {
+  console.warn('Supabase ainda não carregou; inicializando mais tarde.');
+  window.addEventListener('load', () => {
+    if (window.supabase) {
+      supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
+    } else {
+      console.error('Supabase não disponível após load.');
+    }
+  });
+}
 
 const STATE = {
   modoDev: false,
