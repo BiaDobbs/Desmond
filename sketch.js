@@ -557,11 +557,11 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
 
   // Calcula posições dos campos
   let fieldWidth = cardWidth * 0.8;
-  let fieldHeight = cardHeight * 0.08;
+  let fieldHeight = cardHeight * 0.1;
 
   // Garante tamanhos mínimos e máximos
-  fieldWidth = constrain(fieldWidth, 200, 400);
-  fieldHeight = constrain(fieldHeight, 35, 55);
+  fieldWidth = constrain(fieldWidth, cardWidth * 0.3, cardWidth * 0.9);
+  fieldHeight = constrain(fieldHeight, cardWidth * 0.05, cardWidth * 0.15);
 
   let caixaTop = cy - cardHeight / 2 + cardHeight * 0.25; // Mais espaço para título
   let caixaBottom = cy + cardHeight / 2 - cardHeight * 0.15; // Mais margem inferior
