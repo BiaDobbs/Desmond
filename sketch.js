@@ -464,8 +464,8 @@ function avancarTutorial() {
 
 function desenharIntro() {
   // Calcula dimensões responsivas
-  let cardWidth = min(width * 0.85, width);
-  let cardHeight = min(height * 0.75, height);
+  let cardWidth = min(width * 0.85, UI.isMobile ? width : 500);
+  let cardHeight = min(height * 0.75, UI.isMobile ? height : 600);
   let tituloAltura = cardHeight * 0.12;
   let cx = width / 2;
   let cy = height / 2;
@@ -560,8 +560,8 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
   let fieldHeight = cardHeight * 0.1;
 
   // Garante tamanhos mínimos e máximos
-  fieldWidth = constrain(fieldWidth, cardWidth * 0.3, cardWidth * 0.9);
-  fieldHeight = constrain(fieldHeight, cardWidth * 0.05, cardWidth * 0.15);
+  fieldWidth = constrain(fieldWidth, cardWidth * 0.3, cardWidth * 0.8);
+  fieldHeight = constrain(fieldHeight, cardWidth * 0.05, cardWidth * 0.1);
 
   let caixaTop = cy - cardHeight / 2 + cardHeight * 0.25; // Mais espaço para título
   let caixaBottom = cy + cardHeight / 2 - cardHeight * 0.15; // Mais margem inferior
