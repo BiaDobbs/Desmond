@@ -47,7 +47,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
 const STATE = {
   modoDev: false,
   traducao: null,
-  idioma: "en", // pode mudar para "en" dinamicamente se quiser
+  idioma: "pt", // pode mudar para "en" dinamicamente se quiser
   animals: [],
   animaisCarregados: false,
   current: 0,
@@ -55,6 +55,7 @@ const STATE = {
   votos: [],
   userId: null,
   countryCode: null,
+  nacionalidades: null,
   comparando: false,
   porcentagemSimilaridade: 0,
   superLikeActive: false,
@@ -97,6 +98,10 @@ function fetchCountryCode() {
     });
 }
 
+function aplicarShadow(el, cor = "8px 12px" + CONFIG.borderColor) {
+  if (el) el.style("box-shadow", cor);
+}
+
 // --- p5.js LIFECYCLE --- //
 function preload() {
   let tabelaTradUrl =
@@ -134,6 +139,7 @@ function setup() {
     STATE.ended = true;
     fetchTopVotes();
     fetchPaises();
+    fetchNacionalidades();
     fetchTopSuperVotes();
   }
   setupInputUI();
@@ -529,6 +535,8 @@ function desenharIntro() {
   UI.botaoFeminino.show();
   UI.botaoOutro.show();
   UI.botaoContinuar.show();
+  aplicarShadow(UI.inputNacionalidade);
+  aplicarShadow(UI.inputIdade);
 
   // Posiciona elementos
   posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy);
@@ -612,13 +620,11 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
     UI.inputOutroGenero.size(fieldWidth, fieldHeight);
     UI.inputOutroGenero.style("z-index", "1000");
     UI.inputOutroGenero.style("position", "absolute");
+    aplicarShadow(UI.inputOutroGenero);
   }
 
   // Botão Continuar
-  let continuarY =
-    generoY +
-    espacoEntreCampos * 1.5 +
-    (UI.generoSelecionado === "outro" ? fieldHeight + 10 : 0);
+  let continuarY = generoY + espacoEntreCampos * 1.5; // + (UI.generoSelecionado === "outro" ? fieldHeight + 10 : 0);
   let continuarWidth = fieldWidth * 0.4;
   let continuarHeight = fieldHeight;
 
@@ -630,56 +636,183 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
 
 // Setup da UI para tela de informações
 function setupPlayerInfoUI() {
-  // CORREÇÃO 5: Inicializa objeto UI se não existir
-  if (!window.UI) {
-    window.UI = {};
-  }
+  if (!window.UI) window.UI = {};
 
-  // Campo Nacionalidade
+  const cx = width / 2;
+  const cy = height / 2;
+  const cardWidth = min(width * 0.85, 500);
+  const cardHeight = min(height * 0.75, 600);
+
+  // --- Campo Nacionalidade ---
   UI.inputNacionalidade = createInput();
   UI.inputNacionalidade.attribute("placeholder", t("placPais"));
   UI.inputNacionalidade.class("input-player-info");
+  UI.inputNacionalidade.style("position", "absolute");
+  UI.inputNacionalidade.style("z-index", "1000");
   UI.inputNacionalidade.hide();
+  document.body.appendChild(UI.inputNacionalidade.elt); // garante que está no DOM
 
-  // Campo Idade
+  // --- Campo Idade ---
   UI.inputIdade = createInput();
   UI.inputIdade.attribute("placeholder", t("placIdade"));
   UI.inputIdade.attribute("type", "number");
   UI.inputIdade.attribute("min", "1");
   UI.inputIdade.attribute("max", "120");
   UI.inputIdade.class("input-player-info");
+  UI.inputIdade.style("position", "absolute");
+  UI.inputIdade.style("z-index", "1000");
   UI.inputIdade.hide();
+  document.body.appendChild(UI.inputIdade.elt);
 
-  // Botões de Gênero
+  // --- Botões de Gênero ---
   UI.botaoMasculino = createButton(t("gen1"));
   UI.botaoMasculino.class("botao-genero");
   UI.botaoMasculino.mousePressed(() => selecionarGenero("masculino"));
+  UI.botaoMasculino.style("position", "absolute");
+  UI.botaoMasculino.style("z-index", "1000");
   UI.botaoMasculino.hide();
+  document.body.appendChild(UI.botaoMasculino.elt);
 
   UI.botaoFeminino = createButton(t("gen2"));
   UI.botaoFeminino.class("botao-genero");
   UI.botaoFeminino.mousePressed(() => selecionarGenero("feminino"));
+  UI.botaoFeminino.style("position", "absolute");
+  UI.botaoFeminino.style("z-index", "1000");
   UI.botaoFeminino.hide();
+  document.body.appendChild(UI.botaoFeminino.elt);
 
   UI.botaoOutro = createButton(t("gen3"));
   UI.botaoOutro.class("botao-genero");
   UI.botaoOutro.mousePressed(() => selecionarGenero("outro"));
+  UI.botaoOutro.style("position", "absolute");
+  UI.botaoOutro.style("z-index", "1000");
   UI.botaoOutro.hide();
+  document.body.appendChild(UI.botaoOutro.elt);
 
-  // Campo para "Outro" gênero
   UI.inputOutroGenero = createInput();
   UI.inputOutroGenero.attribute("placeholder", t("gen3Cont"));
   UI.inputOutroGenero.class("input-player-info");
+  UI.inputOutroGenero.style("position", "absolute");
+  UI.inputOutroGenero.style("z-index", "1000");
   UI.inputOutroGenero.hide();
+  document.body.appendChild(UI.inputOutroGenero.elt);
 
-  // Botão Continuar
   UI.botaoContinuar = createButton(t("btnCont"));
   UI.botaoContinuar.class("botao-principal");
   UI.botaoContinuar.mousePressed(enviarInfoJogador);
+  UI.botaoContinuar.style("position", "absolute");
+  UI.botaoContinuar.style("z-index", "1000");
   UI.botaoContinuar.hide();
+  document.body.appendChild(UI.botaoContinuar.elt);
 
-  // Variável para controlar gênero selecionado
   UI.generoSelecionado = null;
+
+  // --- Buscar lista de países e inicializar autocomplete ---
+  fetch("https://restcountries.com/v3.1/all?fields=name,translations")
+    .then((res) => res.json())
+    .then((data) => {
+      const countries = data.map((c) => {
+        if (STATE.idioma === "pt") {
+          return c.translations?.por?.common || c.name.common;
+        } else {
+          return c.name.common;
+        }
+      });
+
+      criarAutocomplete(UI.inputNacionalidade.elt, countries);
+    })
+    .catch((err) => console.error("Erro ao buscar países:", err));
+}
+
+// --- Função de autocomplete ---
+function criarAutocomplete(input, arr) {
+  let currentFocus;
+  input.addEventListener("input", function () {
+    let val = this.value;
+    closeAllLists();
+    if (!val) return false;
+    currentFocus = -1;
+
+    const list = document.createElement("div");
+    list.setAttribute("class", "autocomplete-items");
+    list.style.position = "absolute";
+    list.style.backgroundColor = "white";
+    list.style.border = "1px solid #d4d4d4";
+    list.style.zIndex = "10000";
+    list.style.maxHeight = "150px";
+    list.style.overflowY = "auto";
+
+    // posiciona abaixo do input
+    const rect = input.getBoundingClientRect();
+    list.style.left = rect.left + "px";
+    list.style.top = rect.bottom + "px";
+    list.style.width = rect.width + "px";
+
+    document.body.appendChild(list);
+
+    arr.forEach((item) => {
+      if (item.substr(0, val.length).toUpperCase() === val.toUpperCase()) {
+        const option = document.createElement("div");
+        option.innerHTML =
+          "<strong>" + item.substr(0, val.length) + "</strong>";
+        option.innerHTML += item.substr(val.length);
+        option.style.padding = "5px";
+        option.addEventListener("click", function () {
+          input.value = item;
+          closeAllLists();
+        });
+        list.appendChild(option);
+      }
+    });
+  });
+
+  input.addEventListener("keydown", function (e) {
+    const x = document.querySelector(".autocomplete-items");
+    if (x) {
+      let items = x.getElementsByTagName("div");
+      if (e.keyCode === 40) {
+        currentFocus++;
+        addActive(items);
+      } else if (e.keyCode === 38) {
+        currentFocus--;
+        addActive(items);
+      } else if (e.keyCode === 13) {
+        e.preventDefault();
+        if (currentFocus > -1 && items) {
+          items[currentFocus].click();
+        }
+      }
+    }
+  });
+
+  function addActive(items) {
+    if (!items) return false;
+    removeActive(items);
+    if (currentFocus >= items.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = items.length - 1;
+    items[currentFocus].classList.add("autocomplete-active");
+    items[currentFocus].style.backgroundColor = "#e9e9e9";
+  }
+
+  function removeActive(items) {
+    for (let i = 0; i < items.length; i++) {
+      items[i].classList.remove("autocomplete-active");
+      items[i].style.backgroundColor = "white";
+    }
+  }
+
+  function closeAllLists(elmnt) {
+    const items = document.getElementsByClassName("autocomplete-items");
+    for (let i = 0; i < items.length; i++) {
+      if (elmnt !== items[i] && elmnt !== input) {
+        items[i].parentNode.removeChild(items[i]);
+      }
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    closeAllLists(e.target);
+  });
 }
 
 // Função para selecionar gênero
@@ -940,15 +1073,21 @@ function desenharCard(animal) {
 
   // Imagem
   if (animal.img) {
+    push();
+    drawingContext.shadowOffsetX = 8;
+    drawingContext.shadowOffsetY = 12;
+    drawingContext.shadowColor = "#1A0D72";
+
     imageMode(CENTER);
     let imagemAltura = cardHeight * 0.6;
     let imagemY = (-cardHeight * 0.05) / 2;
     image(animal.img, 0, imagemY, cardWidth * 0.85, imagemAltura);
+    pop();
   }
   // Nome científico
   textStyle(ITALIC);
   textSize(cardHeight * 0.06);
-  text(animal.nameCientifico, 0, cardHeight / 2 - cardHeight * 0.18);
+  text(animal.nameCientifico, 0, cardHeight / 2 - cardHeight * 0.16);
 
   // Fun fact
   textStyle(NORMAL);
@@ -1076,7 +1215,7 @@ function desenharCard(animal) {
 
 function vote(direction) {
   let animalAtual = STATE.animals[STATE.current];
-  let animalName = animalAtual.nameComum_pt;
+  let animalName = animalAtual.nomeComum_pt;
   console.log("Vote chamado. countryCode atual:", STATE.countryCode);
 
   if (!STATE.countryCode) {
@@ -1301,13 +1440,13 @@ function posicionarElementosJustificativa(cardWidth, cardHeight, cx, cy) {
 
   // Posição do input na parte inferior da caixa, mas com margem
   let inputX = cx - inputWidth / 2;
-  let inputY = cy + cardHeight * 0.09;
+  let inputY = cy + cardHeight * 0.001;
 
   UI.caixaInput.position(inputX, inputY);
   UI.caixaInput.size(inputWidth, inputHeight);
 
   // Botões posicionados lado a lado, centralizados, abaixo do input
-  let buttonY = inputY + inputHeight + 20;
+  let buttonY = inputY + inputHeight + 50;
   let buttonWidth = 70; // largura fixa para os botões
   let espacoEntreBotoes = 60; // espaço fixo entre botões
 
@@ -1331,6 +1470,7 @@ function mostrarCaixaJustificativa(tipo, isDemo = false) {
   UI.tipoSuper = tipo;
   UI.caixaInput.value(isDemo ? "Digite o motivo aqui..." : "");
   UI.caixaInput.show();
+  aplicarShadow(UI.caixaInput);
   UI.botaoEnviar.show();
   UI.botaoCancelar.show();
   UI.caixaJustificativaVisivel = true;
@@ -1532,7 +1672,7 @@ function makeBox(
   box.style("display", "flex");
   box.style("flex-direction", "column");
   box.style("align-items", "center");
-  box.style("gap", "20px"); // aqui você ajusta o espaço entre os filhos
+  box.style("gap", "40px"); // aqui você ajusta o espaço entre os filhos
 
   // Faixa de título
   const title = createDiv(titulo);
@@ -1555,6 +1695,7 @@ function makeBox(
   UI[inputRef].style("width", "90%");
   UI[inputRef].style("font-size", fontSize + "px");
   UI[inputRef].style("margin", "0"); // limpar margin para usar gap
+  aplicarShadow(UI[inputRef]);
   UI[inputRef].parent(box);
 
   // Botão
@@ -1804,7 +1945,7 @@ function desenharMensagemSucesso() {
   box.style("border-radius", "0");
   box.style("min-width", "320px");
   box.style("max-width", "90vw");
-  box.style("box-shadow", "0 4px 32px rgba(0,0,0,0.18)");
+  box.style("box-shadow", "0 10px 10px #1A0D72");
   box.style("text-align", "center");
   box.style("position", "relative");
   box.parent(UI.sucessoModal);
@@ -1891,6 +2032,7 @@ function pularSugestaoFinal() {
   UI.tela = "resultado";
   fetchTopVotes();
   fetchPaises();
+  fetchNacionalidades();
   fetchTopSuperVotes();
 }
 
@@ -2364,4 +2506,22 @@ function fetchTopSuperVotes() {
     .then((data) => {
       STATE.topSuperDislikes = data;
     });
+}
+
+function fetchNacionalidades() {
+  fetch(
+    "https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/rpc/unique_voters_by_nacionalidade",
+    {
+      method: "POST",
+      headers: {
+        apikey: CONFIG.apiKey,
+        Authorization: CONFIG.apiBearer,
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      STATE.nacionalidades = data;
+    })
+    .catch((err) => console.error("Erro ao buscar nacionalidades:", err));
 }
