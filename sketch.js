@@ -464,8 +464,8 @@ function avancarTutorial() {
 
 function desenharIntro() {
   // Calcula dimensões responsivas
-  let cardWidth = min(width * 0.85, 500);
-  let cardHeight = min(height * 0.75, 600);
+  let cardWidth = min(width * 0.85, width);
+  let cardHeight = min(height * 0.75, height);
   let tituloAltura = cardHeight * 0.12;
   let cx = width / 2;
   let cy = height / 2;
