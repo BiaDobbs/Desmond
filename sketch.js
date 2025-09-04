@@ -19,7 +19,7 @@ const CONFIG = {
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
 const UI = {
-  tela: "votacao", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
+  tela: "intro", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
   tutorialPasso: 0,
   isMobile: false,
   gradienteFundo: null,
