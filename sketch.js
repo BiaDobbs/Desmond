@@ -19,7 +19,7 @@ const CONFIG = {
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
 const UI = {
-  tela: "intro", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
+  tela: "votacao", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
   tutorialPasso: 0,
   isMobile: false,
   gradienteFundo: null,
@@ -130,6 +130,8 @@ function setup() {
   rectMode(CENTER);
   UI.isMobile = windowWidth <= 1000;
 
+
+  
   STATE.userId = getUserId();
   initializePlayerInfo();
   fetchCountryCode();
@@ -388,7 +390,7 @@ function desenharBotoesAnimadosTutorial() {
       scale(fatorEscala);
 
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rectMode(CENTER);
       rect(0, 0, btnSize, btnSize);
@@ -403,7 +405,7 @@ function desenharBotoesAnimadosTutorial() {
       scale(fatorEscala);
 
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
       rect(0, 0, btnSize, btnSize);
@@ -422,7 +424,7 @@ function desenharBotoesAnimadosTutorial() {
       scale(fatorEscala);
 
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rectMode(CENTER);
       rect(0, 0, btnSize, btnSize);
@@ -437,7 +439,7 @@ function desenharBotoesAnimadosTutorial() {
       scale(fatorEscala);
 
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
       rect(0, 0, btnSize, btnSize);
@@ -477,7 +479,7 @@ function desenharIntro() {
   // Fundo do card principal
   fill(CONFIG.backgroundColor);
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   rect(0, 0, cardWidth, cardHeight);
 
   // Faixa azul do título
@@ -557,7 +559,7 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
 
   // Calcula posições dos campos
   let fieldWidth = cardWidth * 0.8;
-  let fieldHeight = cardHeight * 0.1;
+  let fieldHeight = cardHeight * 0.08;
 
   // Garante tamanhos mínimos e máximos
   fieldWidth = constrain(fieldWidth, cardWidth * 0.3, cardWidth * 0.8);
@@ -933,6 +935,7 @@ async function carregarAnimaisDoSupabase() {
           }
         }
         return {
+          nomeVoto: animal.nomeComum_pt || "",
           nameComum: animal[`nomeComum_${lang}`] || "",
           nameCientifico: animal.nomeCientifico || "",
           curiosidade: animal[`descricao_${lang}`] || "",
@@ -1007,7 +1010,7 @@ function desenharVotacao() {
   translate(width / 2 + STATE.offsetX, height / 2);
   rotate(radians(STATE.offsetX * 0.05));
   desenharCard(animal);
-  pop();
+    pop();
 
   let threshold = 50;
   if (abs(STATE.offsetX) > threshold) {
@@ -1023,6 +1026,9 @@ function desenharVotacao() {
 }
 
 function desenharCard(animal) {
+  
+  
+  
   let cardWidth, cardHeight;
   if (UI.isMobile) {
     cardHeight = height * 0.6;
@@ -1038,7 +1044,7 @@ function desenharCard(animal) {
   rectMode(CORNER);
   fill(CONFIG.backgroundColor);
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   let extraAltura = cardHeight * 0.13;
   rect(
     -cardWidth / 2,
@@ -1051,7 +1057,7 @@ function desenharCard(animal) {
   // Título
   fill(CONFIG.borderColor);
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   rect(0, -cardHeight / 2 + tituloAltura / 2, tituloLargura, tituloAltura);
   noStroke();
   fill("#C0B9ED");
@@ -1071,6 +1077,7 @@ function desenharCard(animal) {
   textSize(tituloSize);
   text(animal.nameComum, 0, -cardHeight / 2 + tituloAltura / 2);
 
+  
   // Imagem
   if (animal.img) {
     push();
@@ -1120,7 +1127,7 @@ function desenharCard(animal) {
     let spacing = btnSize * 2;
     if (STATE.superDislikesCount < 3) {
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rect(-spacing / 2, btnY, btnSize, btnSize);
       noStroke();
@@ -1135,7 +1142,7 @@ function desenharCard(animal) {
     }
     if (STATE.superLikesCount < 3) {
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rect(spacing / 2, btnY, btnSize, btnSize);
       noStroke();
@@ -1153,7 +1160,7 @@ function desenharCard(animal) {
     let btnOffsetX = cardWidth * 0.45;
     if (STATE.superDislikesCount < 3) {
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rect(-btnOffsetX, btnY, btnSize, btnSize);
       noStroke();
@@ -1168,7 +1175,7 @@ function desenharCard(animal) {
     }
     if (STATE.superLikesCount < 3) {
       stroke(CONFIG.borderColor);
-      strokeWeight(2);
+      strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rect(btnOffsetX, btnY, btnSize, btnSize);
       noStroke();
@@ -1214,9 +1221,10 @@ function desenharCard(animal) {
 }
 
 function vote(direction) {
-  let animalAtual = STATE.animals[STATE.current];
-  let animalName = animalAtual.nomeComum_pt;
-  console.log("Vote chamado. countryCode atual:", STATE.countryCode);
+  
+  let animalName = STATE.animals[STATE.current].nomeVoto;
+  //console.log("Vote chamado. countryCode atual:", STATE.countryCode);
+  
 
   if (!STATE.countryCode) {
     console.warn("País desconhecido - voto não enviado.");
@@ -1383,7 +1391,7 @@ function drawJustificativaBox() {
   rectMode(CENTER);
   fill(CONFIG.backgroundColor);
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   rect(0, 0, cardWidth, cardHeight);
   fill(CONFIG.borderColor);
   let tituloOffsetY = -cardHeight / 2 - tituloAltura / 4 + 12;
@@ -1845,7 +1853,7 @@ function desenharSugestaoFinal() {
 
 function drawBox(x, y, w, h, titulo, textoExplicativo) {
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   fill(CONFIG.backgroundColor);
   rect(x, y, w, h);
   fill(CONFIG.borderColor);
@@ -1940,7 +1948,7 @@ function desenharMensagemSucesso() {
   // Caixa do modal
   const box = createDiv();
   box.style("background", "#F8F4E8");
-  box.style("border", "2px solid #1A0D72");
+  box.style("border", "8px solid #1A0D72");
   box.style("padding", "32px 32px 24px 32px");
   box.style("border-radius", "0");
   box.style("min-width", "320px");
@@ -2065,7 +2073,7 @@ function desenharHeader() {
   let titleSize = width < 768 ? 24 : width < 1024 ? 32 : 40;
   textSize(titleSize);
   fill(CONFIG.borderColor);
-  text("Obrigada por votar!", width / 2, height * 0.06);
+  text(t("thankTit"), width / 2, height * 0.06);
 
   // Porcentagem de similaridade
   if (
@@ -2075,9 +2083,7 @@ function desenharHeader() {
     let subtitleSize = width < 768 ? 16 : width < 1024 ? 20 : 24;
     textSize(subtitleSize);
     text(
-      `Sua similaridade com os outros votos é de ${STATE.porcentagemSimilaridade.toFixed(
-        1
-      )}%`,
+      t("similar") + `${STATE.porcentagemSimilaridade.toFixed(1)}%`,
       width / 2,
       height * 0.1
     );
@@ -2167,7 +2173,7 @@ function desenharCaixaTopLikes(x, y, boxWidth) {
   let boxHeight = items.length * itemHeight + padding * 2;
 
   // Desenha a caixa
-  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 mais curtidos:");
+  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, t("topLike"));
 
   // Desenha os itens
   fill(CONFIG.textColor);
@@ -2197,7 +2203,7 @@ function desenharCaixaTopDislikes(x, y, boxWidth) {
   let boxHeight = items.length * itemHeight + padding * 2;
 
   // Desenha a caixa
-  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 mais rejeitados:");
+  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, t("topDislike"));
 
   // Desenha os itens
   fill(CONFIG.textColor);
@@ -2227,7 +2233,7 @@ function desenharCaixaOrigemVotos(x, y, boxWidth) {
   let boxHeight = paises.length * itemHeight + padding * 2;
 
   // Desenha a caixa
-  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Origem dos votos:");
+  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, t("origem"));
 
   // Desenha os países
   fill(CONFIG.textColor);
@@ -2264,7 +2270,7 @@ function desenharCaixaNacionalidadeVotos(x, y, boxWidth) {
   let boxHeight = nacionalidades.length * itemHeight + padding * 2;
 
   // Desenha a caixa
-  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Nacionalidade dos votos:");
+  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, t("nacionalidades"));
 
   // Desenha as nacionalidades
   fill(CONFIG.textColor);
@@ -2304,7 +2310,7 @@ function desenharCaixaSuperVotos(x, y, boxWidth) {
   let boxHeight = maxItems * itemHeight + padding * 2;
 
   // Desenha a caixa
-  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, "Top 5 Super Votados:");
+  desenharCaixaComTitulo(x, y, boxWidth, boxHeight, t("topSuper"));
 
   fill(CONFIG.textColor);
   noStroke();
@@ -2362,7 +2368,7 @@ function desenharCaixaComTitulo(x, y, w, h, titulo) {
   // Caixa principal
   fill(CONFIG.backgroundColor);
   stroke(CONFIG.borderColor);
-  strokeWeight(2);
+  strokeWeight(4);
   rect(x, y, w, h);
 
   // Faixa do título
