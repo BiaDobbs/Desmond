@@ -74,6 +74,9 @@ const STATE = {
 };
 
 let tutorialSlides;
+let imgSticker;
+let idiomaEscolhido = false;
+let btnPT, btnEN;
 
 // --- UTILS --- //
 function getUserId() {
@@ -110,28 +113,24 @@ function preload() {
   STATE.traducao = loadTable(tabelaTradUrl, "tsv", "header");
 
   fetchPaises();
-  UI.videoLike = createVideo(
-    "https://cdn.pixabay.com/video/2018/03/28/15240-262569955_large.mp4"
-  );
-  UI.videoLike.hide();
-  UI.videoLike.elt.style.zIndex = "99999";
 
-  UI.videoDislike = createVideo(
-    "https://cdn.pixabay.com/video/2023/07/02/169797-841740222_large.mp4"
-  );
-  UI.videoDislike.hide();
-  UI.videoDislike.elt.style.zIndex = "99999";
+  // Carrega a imagem do sticker
+  imgSticker = loadImage("IMG-0516.webp");
 }
 
 function setup() {
+
   createCanvas(windowWidth, windowHeight);
   textAlign(CENTER, CENTER);
   textSize(32);
   rectMode(CENTER);
   UI.isMobile = windowWidth <= 1000;
 
+  if (!idiomaEscolhido) {
+    mostrarTelaEscolhaIdioma();
+    return;
+  }
 
-  
   STATE.userId = getUserId();
   initializePlayerInfo();
   fetchCountryCode();
@@ -150,6 +149,7 @@ function setup() {
   carregarAnimaisDoSupabase();
 
   tutorialSlides = [
+    { texto: t("tuto0"), mostrarCard: false },
     { texto: t("tuto1"), mostrarCard: true },
     { texto: t("tuto2"), mostrarCard: true, demoSwipe: "right" },
     { texto: t("tuto3"), mostrarCard: true, demoSwipe: "left" },
@@ -171,6 +171,11 @@ function setup() {
 
 function draw() {
   drawGradientBackground();
+  
+  if (!idiomaEscolhido) {
+    mostrarTelaEscolhaIdioma();
+    return;
+  }
 
   if (!STATE.animaisCarregados) {
     push();
@@ -190,15 +195,19 @@ function draw() {
   if (UI.tela === "tutorial") {
     desenharTutorial();
   } else if (UI.tela === "intro") {
+    if (UI.botaoIdioma) UI.botaoIdioma.hide();
     rectMode(CENTER);
     desenharIntro();
   } else if (UI.tela === "votacao") {
+    if (UI.botaoIdioma) UI.botaoIdioma.hide();
     rectMode(CENTER);
     desenharVotacao();
   } else if (UI.tela === "sugestao") {
+    if (UI.botaoIdioma) UI.botaoIdioma.hide();
     rectMode(CENTER);
     desenharSugestaoFinal();
   } else if (UI.tela === "resultado") {
+    if (UI.botaoIdioma) UI.botaoIdioma.hide();
     rectMode(CORNER);
     compararComOutros();
     desenharResultados();
@@ -248,6 +257,65 @@ function t(key) {
   return key; // fallback se não achar
 }
 
+function atualizarTextosPlayerInfo() {
+  if (!UI.inputNacionalidade || !UI.inputIdade) return;
+  UI.inputNacionalidade.attribute("placeholder", t("placPais"));
+  UI.inputIdade.attribute("placeholder", t("placIdade"));
+  UI.botaoMasculino.html(t("gen1"));
+  UI.botaoFeminino.html(t("gen2"));
+  UI.botaoOutro.html(t("gen3"));
+  UI.inputOutroGenero.attribute("placeholder", t("gen3Cont"));
+  UI.botaoContinuar.html(t("btnCont"));
+}
+
+function mostrarTelaEscolhaIdioma() {
+  //background(CONFIG.backgroundColor);
+  textAlign(CENTER, CENTER);
+  textSize(32);
+  fill(CONFIG.borderColor);
+  text("Escolha seu idioma / Choose your language", width / 2, height / 2 - 60);
+
+  // Botão Português
+  if (!btnPT) {
+    btnPT = createButton("Português");
+    btnPT.class("botao-idioma");
+    btnPT.position(width / 2 - 280, height / 2);
+    btnPT.size(110, 40);
+    btnPT.style("font-size", "18px");
+    btnPT.mousePressed(() => {
+      STATE.idioma = "pt";
+      idiomaEscolhido = true;
+      btnPT.remove();
+      btnEN.remove();
+      btnPT = null;
+      btnEN = null;
+      setup();
+    });
+  } else {
+    btnPT.show();
+  }
+
+  // Botão English
+  if (!btnEN) {
+    btnEN = createButton("English");
+    btnEN.class("botao-idioma");
+    btnEN.position(width / 2 + 150, height / 2);
+    btnEN.size(110, 40);
+    btnEN.style("font-size", "18px");
+    btnEN.mousePressed(() => {
+      STATE.idioma = "en";
+      idiomaEscolhido = true;
+      btnPT.remove();
+      btnEN.remove();
+      btnPT = null;
+      btnEN = null;
+      setup();
+    });
+  } else {
+    btnEN.show();
+  }
+}
+
 // --- TUTORIAL ---//
 
 // Criar botões do tutorial (apenas uma vez no setup)
@@ -271,10 +339,10 @@ function desenharTutorial() {
   // Texto
   fill("#1A0D72");
   textAlign(CENTER, TOP);
-  textSize(UI.isMobile ? 18 : 24);
+  textSize(UI.isMobile ? 20 : 24);
   textWrap(WORD);
   let margemTopo = height * 0.06;
-  let larguraTexto = min(width * 0.85, 850);
+  let larguraTexto = min(width * 0.9, 850);
   text(passoAtual.texto, width / 2, margemTopo, larguraTexto);
 
   // Card de demonstração
@@ -337,10 +405,18 @@ function desenharTutorial() {
     if (passoAtual.demoSuperPopup) {
       mostrarCaixaJustificativa("like", true);
     }
-    if (passoAtual.previewStickers) {
-    }
 
     pop();
+  }
+
+  // --- DESENHAR STICKER NO CENTRO SE previewStickers ---
+  if (passoAtual.previewStickers) {
+    if (imgSticker) {
+      let imgW = min(width * 0.35, 350);
+      let imgH = imgW;
+      imageMode(CENTER);
+      image(imgSticker, width / 2, height / 2, imgW, imgH);
+    }
   }
 
   // Posição dos botões (responsivo)
@@ -352,6 +428,24 @@ function desenharTutorial() {
     UI.botaoVoltarTutorial.position(width * 0.2 - botaoWidth / 2, yBotao);
     UI.botaoVoltarTutorial.size(botaoWidth, botaoHeight);
     UI.botaoVoltarTutorial.show();
+  }
+
+  // --- PULSAÇÃO NO BOTÃO AVANÇAR NO PASSO 0 ---
+  if (UI.tutorialPasso === 0) {
+
+    UI.botaoVoltarTutorial.hide();
+    
+    // Cálculo do fator de escala animado (igual ao dos botões do tutorial)
+    const cicloBotoes = 800; // ms para um ciclo completo de pulsação
+    let tBotoes = millis() % cicloBotoes;
+    let faseBotoes = (tBotoes / cicloBotoes) * 2 * PI; // 0 a 2π
+    let fatorEscala = 1.25 + sin(faseBotoes) * 0.25; // varia entre 1 e 1.5
+
+    // Aplica a escala no botão usando CSS transform
+    UI.botaoAvancarTutorial.style("transform", `scale(${fatorEscala})`);
+  } else {
+    // Remove o efeito quando não está no passo 0
+    UI.botaoAvancarTutorial.style("transform", "scale(1)");
   }
 
   UI.botaoAvancarTutorial.position(width * 0.8 - botaoWidth / 2, yBotao);
@@ -451,7 +545,7 @@ function desenharBotoesAnimadosTutorial() {
 
 function avancarTutorial() {
   if (UI.tutorialPasso < tutorialSlides.length - 1) {
-    if (UI.tutorialPasso == 4) {
+    if (UI.tutorialPasso == 5) {
       cancelarJustificativa();
     }
     UI.tutorialPasso++;
@@ -465,6 +559,7 @@ function avancarTutorial() {
 // --- PLAYER INFO ---//
 
 function desenharIntro() {
+
   // Calcula dimensões responsivas
   let cardWidth = min(width * 0.85, UI.isMobile ? width : 500);
   let cardHeight = min(height * 0.75, UI.isMobile ? height : 600);
@@ -1010,7 +1105,7 @@ function desenharVotacao() {
   translate(width / 2 + STATE.offsetX, height / 2);
   rotate(radians(STATE.offsetX * 0.05));
   desenharCard(animal);
-    pop();
+  pop();
 
   let threshold = 50;
   if (abs(STATE.offsetX) > threshold) {
@@ -1026,9 +1121,6 @@ function desenharVotacao() {
 }
 
 function desenharCard(animal) {
-  
-  
-  
   let cardWidth, cardHeight;
   if (UI.isMobile) {
     cardHeight = height * 0.6;
@@ -1077,7 +1169,6 @@ function desenharCard(animal) {
   textSize(tituloSize);
   text(animal.nameComum, 0, -cardHeight / 2 + tituloAltura / 2);
 
-  
   // Imagem
   if (animal.img) {
     push();
@@ -1221,10 +1312,8 @@ function desenharCard(animal) {
 }
 
 function vote(direction) {
-  
   let animalName = STATE.animals[STATE.current].nomeVoto;
   //console.log("Vote chamado. countryCode atual:", STATE.countryCode);
-  
 
   if (!STATE.countryCode) {
     console.warn("País desconhecido - voto não enviado.");
@@ -1515,7 +1604,7 @@ function mostrarCaixaJustificativa(tipo, isDemo = false) {
   }, 10);
 }
 
-function enviarJustificativa() {
+/*function enviarJustificativa() {
   // Não faz nada se estiver em modo demo
   if (UI.caixaInput.hasClass("demo-disabled")) return;
 
@@ -1565,6 +1654,82 @@ function enviarJustificativa() {
       STATE.offsetX = 0;
       STATE.current++;
     }, 2500);
+  });
+}*/
+
+function enviarJustificativa() {
+  let texto = UI.caixaInput.value().trim();
+  if (texto.length === 0) return;
+
+  let currentAnimal = STATE.animals[STATE.current];
+  if (!currentAnimal) return;
+
+  const tipoAtual = UI.tipoSuper;
+  if (!tipoAtual) return;
+
+  // Define o arquivo de vídeo correspondente
+  const videoSrc =
+    tipoAtual === "like"
+      ? "DesmondSuperLike.webm"
+      : "DesmondSuperDislike.webm";
+
+  // Cria overlay <video> full-screen
+  const overlay = document.createElement("video");
+  overlay.src = videoSrc;
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100vw";
+  overlay.style.height = "100vh";
+  overlay.style.objectFit = "cover";
+  overlay.style.pointerEvents = "none";
+  overlay.style.zIndex = "99999";
+  overlay.autoplay = true;
+  overlay.muted = true; // evita bloqueio de autoplay em mobile
+  overlay.playsInline = true; // mobile Safari
+  document.body.appendChild(overlay);
+
+  overlay.play(); // garante que comece a rodar
+
+  // Envia para o Supabase
+  fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/super_votes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: CONFIG.apiKey,
+      Authorization: CONFIG.apiBearer,
+    },
+    body: JSON.stringify({
+      user_id: STATE.userId,
+      animal: currentAnimal.nameComum,
+      tipo: tipoAtual,
+      motivo: texto,
+      country: STATE.countryCode,
+      timestamp: new Date().toISOString(),
+    }),
+  }).then(() => {
+    // Atualiza contadores e estado
+    if (tipoAtual === "like") {
+      STATE.superLikesCount++;
+      STATE.superLikeActive = false;
+    } else {
+      STATE.superDislikesCount++;
+      STATE.superDislikeActive = false;
+    }
+
+    UI.tipoSuper = null;
+    UI.caixaInput.hide();
+    UI.botaoEnviar.hide();
+    UI.botaoCancelar.hide();
+    UI.caixaJustificativaVisivel = false;
+    STATE.offsetX = 0;
+    STATE.current++;
+
+    // Remove overlay após 1,5s
+    setTimeout(() => {
+      overlay.pause();
+      overlay.remove();
+    }, 1500);
   });
 }
 
@@ -1635,16 +1800,6 @@ function enviarJustificativa() {
       STATE.current++;
     }, 2500);
   });
-}
-
-function cancelarJustificativa() {
-  UI.tipoSuper = null;
-  STATE.superLikeActive = false;
-  STATE.superDislikeActive = false;
-  UI.caixaInput.hide();
-  UI.botaoEnviar.hide();
-  UI.botaoCancelar.hide();
-  UI.caixaJustificativaVisivel = false;
 }
 
 // --- SUGESTÃO --- //
@@ -2048,7 +2203,7 @@ function pularSugestaoFinal() {
 function desenharResultados() {
   // Detecta o tipo de dispositivo
   const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
+  const isTablet = width >= 768 && width < 1200;
 
   // Header principal
   desenharHeader();

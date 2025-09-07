@@ -82,6 +82,14 @@ canvas {
   border-radius: 0 !important;
 }
 
+.botao-idioma{
+  background-color: #1A0D72;
+  color: #C0B9ED;
+  border: 2px solid #1A0D72;
+  
+  
+}
+
 .botao-padrao, .botao-enviar, .botao-cancelar {
   background-color: #1A0D72;
   color: #C0B9ED;
