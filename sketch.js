@@ -19,7 +19,7 @@ const CONFIG = {
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
 const UI = {
-  tela: "intro", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
+  tela: "votacao", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
   tutorialPasso: 0,
   isMobile: false,
   gradienteFundo: null,
@@ -77,6 +77,15 @@ let tutorialSlides;
 let imgSticker;
 let idiomaEscolhido = false;
 let btnPT, btnEN;
+let btnsl, btnsd;
+let heartSize = 0;
+let phase = 0;       // 0 = cresce até metade, 1 = pulsa, 2 = cresce até máximo, 3 = fade out
+let alphaVal = 255;
+let pulseStartTime = 0;
+
+let animando = false;
+let videoAtual = null;
+
 
 // --- UTILS --- //
 function getUserId() {
@@ -114,8 +123,21 @@ function preload() {
 
   fetchPaises();
 
+
+  UI.videoLike = createVideo("DesmondSuperLike.webm");
+  UI.videoLike.hide();
+  UI.videoLike.elt.style.zIndex = "99999";
+
+  UI.videoDislike = createVideo(
+    "https://cdn.pixabay.com/video/2023/07/02/169797-841740222_large.mp4"
+  );
+  UI.videoDislike.hide();
+  UI.videoDislike.elt.style.zIndex = "99999";
+
   // Carrega a imagem do sticker
   imgSticker = loadImage("IMG-0516.webp");
+  btnsl = loadImage("SuperLike.svg");
+  btnsd = loadImage("SuperDislike.svg");
 }
 
 function setup() {
@@ -171,7 +193,7 @@ function setup() {
 
 function draw() {
   drawGradientBackground();
-  
+
   if (!idiomaEscolhido) {
     mostrarTelaEscolhaIdioma();
     return;
@@ -214,6 +236,11 @@ function draw() {
   }
   if (UI.caixaJustificativaVisivel) {
     drawJustificativaBox();
+  }
+
+  if (animando && videoAtual) {
+    //console.log("Animando ícone:", videoAtual);
+    superAnimacao(videoAtual);
   }
 }
 
@@ -434,7 +461,7 @@ function desenharTutorial() {
   if (UI.tutorialPasso === 0) {
 
     UI.botaoVoltarTutorial.hide();
-    
+
     // Cálculo do fator de escala animado (igual ao dos botões do tutorial)
     const cicloBotoes = 800; // ms para um ciclo completo de pulsação
     let tBotoes = millis() % cicloBotoes;
@@ -487,7 +514,8 @@ function desenharBotoesAnimadosTutorial() {
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rectMode(CENTER);
-      rect(0, 0, btnSize, btnSize);
+      //rect(0, 0, btnSize, btnSize);
+      image(btnsl, 0, 0, btnSize, btnSize);
 
       pop();
     }
@@ -502,7 +530,8 @@ function desenharBotoesAnimadosTutorial() {
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
-      rect(0, 0, btnSize, btnSize);
+      //rect(0, 0, btnSize, btnSize);
+      image(btnsd, 0, 0, btnSize, btnSize);
 
       pop();
     }
@@ -521,8 +550,8 @@ function desenharBotoesAnimadosTutorial() {
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rectMode(CENTER);
-      rect(0, 0, btnSize, btnSize);
-
+      //rect(0, 0, btnSize, btnSize);
+      image(btnsd, 0, 0, btnSize, btnSize);
       pop();
     }
 
@@ -536,7 +565,8 @@ function desenharBotoesAnimadosTutorial() {
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
-      rect(0, 0, btnSize, btnSize);
+      //rect(0, 0, btnSize, btnSize);
+      image(btnsl, 0, 0, btnSize, btnSize);
 
       pop();
     }
@@ -1220,7 +1250,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
-      rect(-spacing / 2, btnY, btnSize, btnSize);
+      //rect(-spacing / 2, btnY, btnSize, btnSize);
+      image(btnsd, -spacing / 1.32, btnY - 28, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1235,7 +1266,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
-      rect(spacing / 2, btnY, btnSize, btnSize);
+      //rect(spacing / 2, btnY, btnSize, btnSize);
+      image(btnsl, spacing / 3.8, btnY - 28, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1254,6 +1286,7 @@ function desenharCard(animal) {
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rect(-btnOffsetX, btnY, btnSize, btnSize);
+      image(btnsd, -btnOffsetX, btnY - 20, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1269,6 +1302,7 @@ function desenharCard(animal) {
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rect(btnOffsetX, btnY, btnSize, btnSize);
+      image(btnsl, btnOffsetX, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1358,7 +1392,7 @@ function vote(direction) {
   })
     .then((res) => {
       if (!res.ok) throw new Error("Erro ao enviar voto");
-      console.log("Voto enviado com sucesso, incluindo informações do jogador");
+      //console.log("Voto enviado com sucesso, incluindo informações do jogador");
       STATE.offsetX = 0;
       STATE.current++;
     })
@@ -1615,7 +1649,7 @@ function mostrarCaixaJustificativa(tipo, isDemo = false) {
   if (!currentAnimal) return;
 
   const tipoAtual = UI.tipoSuper;
-  const videoAtual = tipoAtual === "like" ? UI.videoLike : UI.videoDislike;
+  const videoAtual = tipoAtual === "like" ? btnsl : btnsd;
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/super_votes", {
     method: "POST",
     headers: {
@@ -1657,7 +1691,7 @@ function mostrarCaixaJustificativa(tipo, isDemo = false) {
   });
 }*/
 
-function enviarJustificativa() {
+/*function enviarJustificativa() {
   let texto = UI.caixaInput.value().trim();
   if (texto.length === 0) return;
 
@@ -1731,7 +1765,7 @@ function enviarJustificativa() {
       overlay.remove();
     }, 1500);
   });
-}
+}*/
 
 function cancelarJustificativa() {
   UI.tipoSuper = null;
@@ -1760,7 +1794,13 @@ function enviarJustificativa() {
   let currentAnimal = STATE.animals[STATE.current];
   if (!currentAnimal) return;
   const tipoAtual = UI.tipoSuper;
-  const videoAtual = tipoAtual === "like" ? UI.videoLike : UI.videoDislike;
+  videoAtual = tipoAtual === "like" ? btnsl : btnsd;
+  console.log(tipoAtual);
+  console.log("icone =", videoAtual);
+  heartSize = 0;
+  alphaVal = 255;
+  phase = 0;
+  
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/super_votes", {
     method: "POST",
     headers: {
@@ -1789,18 +1829,78 @@ function enviarJustificativa() {
     UI.botaoEnviar.hide();
     UI.botaoCancelar.hide();
     UI.caixaJustificativaVisivel = false;
-    videoAtual.show();
+    animando = true;
+
+    /*videoAtual.show();
     videoAtual.loop();
-    UI.videoEmExibicao = videoAtual;
+    UI.videoEmExibicao = videoAtual;*/
     setTimeout(() => {
-      videoAtual.stop();
-      videoAtual.hide();
-      UI.videoEmExibicao = false;
+      //videoAtual.stop();
+      //videoAtual.hide();
+      //UI.videoEmExibicao = false;
       STATE.offsetX = 0;
       STATE.current++;
     }, 2500);
   });
 }
+function superAnimacao(videoAtual) {
+
+
+  push();
+  imageMode(CENTER);
+
+  let maxSize = width * 2;
+  let halfSize = maxSize / 8;
+
+  //console.log("começando animação", videoAtual);
+
+  switch (phase) {
+    case 0: // Cresce até metade
+      //console.log("crescendo", videoAtual);
+      heartSize += 20; // velocidade de crescimento
+      if (heartSize >= halfSize) {
+        heartSize = halfSize;
+        phase = 1;
+        pulseStartTime = millis();
+      }
+      break;
+
+    case 1: // Pulsação estacionária por 0.5s
+      //console.log("pulsando", videoAtual);
+      let elapsed = millis() - pulseStartTime;
+      let pulseAmplitude = 10;           // quanto ele vai aumentar/diminuir
+      let pulseSpeed = 2;                // batimentos por segundo
+      let pulse = sin(TWO_PI * pulseSpeed * (elapsed / 1000)) * pulseAmplitude;
+      image(videoAtual, width / 2, height / 2, heartSize + pulse, heartSize + pulse);
+
+      if (elapsed >= 500) { // meio segundo
+        phase = 2;
+      }
+      return; // pulso desenha e interrompe o resto do draw nesse frame
+
+    case 2: // Cresce até tamanho máximo
+      //console.log("crescendo", videoAtual);
+      heartSize += 60;
+      if (heartSize >= maxSize) {
+        heartSize = maxSize;
+        phase = 3;
+      }
+      break;
+
+    case 3: // Fade out
+      //console.log("sumindo", videoAtual);
+      alphaVal -= 15;
+      if (alphaVal <= 0) {
+        animando = false;
+      }
+      break;
+  }
+
+  tint(255, alphaVal);
+  image(videoAtual, width / 2, height / 2, heartSize, heartSize);
+  pop();
+}
+
 
 // --- SUGESTÃO --- //
 
