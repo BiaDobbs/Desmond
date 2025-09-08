@@ -19,7 +19,7 @@ const CONFIG = {
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
 const UI = {
-  tela: "votacao", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
+  tela: "intro", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
   tutorialPasso: 0,
   isMobile: false,
   gradienteFundo: null,
@@ -366,7 +366,7 @@ function desenharTutorial() {
   // Texto
   fill("#1A0D72");
   textAlign(CENTER, TOP);
-  textSize(UI.isMobile ? 20 : 24);
+  textSize(UI.isMobile ? 22 : 30);
   textWrap(WORD);
   let margemTopo = height * 0.06;
   let larguraTexto = min(width * 0.9, 850);
