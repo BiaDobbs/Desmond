@@ -119,8 +119,8 @@ function fetchCountryCode() {
     });
 }
 
-function aplicarShadow(el, cor = "8px 12px" + CONFIG.borderColor) {
-  if (el) el.style("box-shadow", cor);
+function aplicarShadow(el, offset = "8px 12px", cor = CONFIG.borderColor) {
+  if (el) el.style("box-shadow", `${offset} ${cor}`);
 }
 
 // --- p5.js LIFECYCLE --- //
@@ -1226,9 +1226,9 @@ function desenharCard(animal) {
   // Imagem
   if (animal.img) {
     push();
-    drawingContext.shadowOffsetX = 8;
-    drawingContext.shadowOffsetY = 12;
-    drawingContext.shadowColor = "#1A0D72";
+    drawingContext.shadowOffsetX = 20;
+    drawingContext.shadowOffsetY = 25;
+    drawingContext.shadowColor = CONFIG.borderColor;
     imageMode(CENTER);
 
     // Tamanho do retângulo
