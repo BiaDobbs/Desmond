@@ -1303,48 +1303,25 @@ function desenharCard(animal) {
 
 
   // Tamanho de fonte adaptativo
-  if (isMobile) {
-    let curiosidadeSize = getAdaptiveTextSize(
-      animal.curiosidade || "",
-      curiosidadeBoxW,
-      curiosidadeBoxH,
-      {
-        maxSizeRatio: 0.32,
-        minSize: 22,
-        widthUsage: 1.0,
-        lengthCurve: 18,
-      }
-    );
-    textSize(curiosidadeSize);
-    text(
-      animal.curiosidade || "",
-      0,
-      curiosidadeBoxY,
-      curiosidadeBoxW,
-      curiosidadeBoxH
-    );
-  } else {
-    let curiosidadeSize = getAdaptiveTextSize(
-      animal.curiosidade || "",
-      curiosidadeBoxW,
-      curiosidadeBoxH,
-      {
-        maxSizeRatio: 0.32,
-        minSize: 18,
-        widthUsage: 1.0,
-        lengthCurve: 18,
-      }
-    );
-    textSize(curiosidadeSize);
-    text(
-      animal.curiosidade || "",
-      0,
-      curiosidadeBoxY,
-      curiosidadeBoxW,
-      curiosidadeBoxH
-    );
-  }
-
+  let curiosidadeSize = getAdaptiveTextSize(
+    animal.curiosidade || "",
+    curiosidadeBoxW,
+    curiosidadeBoxH,
+    {
+      maxSizeRatio: 0.32,
+      minSize: UI.isMobile ? 24 : 18,
+      widthUsage: 1.0,
+      lengthCurve: 18,
+    }
+  );
+  textSize(curiosidadeSize);
+  text(
+    animal.curiosidade || "",
+    0,
+    curiosidadeBoxY,
+    curiosidadeBoxW,
+    curiosidadeBoxH
+  );
 
   // --- botões de super‑voto ---
   let btnSize = cardWidth * 0.15;
