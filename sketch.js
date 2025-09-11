@@ -1,5 +1,7 @@
 // --- CONFIG & STATE --- //
 const CONFIG = {
+  fonteTitulo: null,
+  fonteCorpo: null,
   coresGenially: [
     "#F8F4E8",
     "#EDE7CF",
@@ -10,16 +12,16 @@ const CONFIG = {
     "#51468D",
     "#C0B9ED",
   ],
-  borderColor: "#1A0D72",
+  borderColor: "#28720dff",
   backgroundColor: "#F8F4E8",
-  textColor: "#1A0D72",
+  textColor: "#23720dff",
   apiKey:
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU",
 };
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
 const UI = {
-  tela: "intro", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
+  tela: "votacao", // 'intro', 'tutorial' 'votacao', 'sugestao', 'resultado'
   tutorialPasso: 0,
   isMobile: false,
   gradienteFundo: null,
@@ -78,6 +80,7 @@ let imgSticker;
 let idiomaEscolhido = false;
 let btnPT, btnEN;
 let btnsl, btnsd;
+let demoPlaceholder;
 let heartSize = 0;
 let phase = 0;       // 0 = cresce até metade, 1 = pulsa, 2 = cresce até máximo, 3 = fade out
 let alphaVal = 255;
@@ -85,6 +88,12 @@ let pulseStartTime = 0;
 
 let animando = false;
 let videoAtual = null;
+const duracoes = {
+  crescer1: 300,   // até metade do tamanho
+  pulsar: 200,   // 0.3s de pulsação
+  crescer2: 300,   // até tamanho máximo
+  fade: 200    // sumir
+};
 
 
 // --- UTILS --- //
@@ -138,6 +147,7 @@ function preload() {
   imgSticker = loadImage("IMG-0516.webp");
   btnsl = loadImage("SuperLike.svg");
   btnsd = loadImage("SuperDislike.svg");
+  demoPlaceholder = loadImage("DemoOnly.png");
 }
 
 function setup() {
@@ -363,14 +373,20 @@ function criarBotoesTutorial() {
 function desenharTutorial() {
   let passoAtual = tutorialSlides[UI.tutorialPasso];
 
-  // Texto
-  fill("#1A0D72");
-  textAlign(CENTER, TOP);
-  textSize(UI.isMobile ? 22 : 30);
-  textWrap(WORD);
-  let margemTopo = height * 0.06;
-  let larguraTexto = min(width * 0.9, 850);
-  text(passoAtual.texto, width / 2, margemTopo, larguraTexto);
+
+  // Posição dos botões (responsivo)
+  let botaoWidth = min(width * 0.2, 100);
+  let botaoHeight = UI.isMobile ? 30 : 20;
+  let yBotao = height - botaoHeight * 2;
+
+  if (UI.tutorialPasso > 0) {
+    UI.botaoVoltarTutorial.position(width * 0.2 - botaoWidth / 2, yBotao);
+    UI.botaoVoltarTutorial.size(botaoWidth, botaoHeight);
+    UI.botaoVoltarTutorial.show();
+  }
+
+
+
 
   // Card de demonstração
   if (passoAtual.mostrarCard) {
@@ -421,7 +437,7 @@ function desenharTutorial() {
       nameCientifico: t("demoCient"),
       curiosidade: t("demoCurio"),
       tags: [t("demoTag1"), t("demoTag2"), t("demoTag3")],
-      img: null,
+      img: demoPlaceholder,
     });
 
     // Desenhar botões animados POR CIMA do card se necessário
@@ -446,16 +462,6 @@ function desenharTutorial() {
     }
   }
 
-  // Posição dos botões (responsivo)
-  let botaoWidth = min(width * 0.2, 100);
-  let botaoHeight = UI.isMobile ? 30 : 20;
-  let yBotao = height - botaoHeight * 2;
-
-  if (UI.tutorialPasso > 0) {
-    UI.botaoVoltarTutorial.position(width * 0.2 - botaoWidth / 2, yBotao);
-    UI.botaoVoltarTutorial.size(botaoWidth, botaoHeight);
-    UI.botaoVoltarTutorial.show();
-  }
 
   // --- PULSAÇÃO NO BOTÃO AVANÇAR NO PASSO 0 ---
   if (UI.tutorialPasso === 0) {
@@ -475,9 +481,24 @@ function desenharTutorial() {
     UI.botaoAvancarTutorial.style("transform", "scale(1)");
   }
 
+  fill('#51468daa');
+  rectMode(CENTER);
+  rect(0, 0, 100000, 10000);
+
+
   UI.botaoAvancarTutorial.position(width * 0.8 - botaoWidth / 2, yBotao);
   UI.botaoAvancarTutorial.size(botaoWidth, botaoHeight);
   UI.botaoAvancarTutorial.show();
+
+  // Texto
+  let margemTopo = height * 0.06;
+  let larguraTexto = min(width * 0.9, 850);
+  fill("#1A0D72");
+  textAlign(CENTER, TOP);
+  textSize(UI.isMobile ? 22 : 30);
+  textWrap(WORD);
+  text(passoAtual.texto, width / 2, margemTopo, larguraTexto);
+
 }
 
 function desenharBotoesAnimadosTutorial() {
@@ -740,7 +761,7 @@ function posicionarCamposPlayerInfo(cardWidth, cardHeight, cx, cy) {
   UI.botaoOutro.style("z-index", "1000");
   UI.botaoOutro.style("position", "absolute");
 
-  // Campo "Outro" gênero (aparece apenas se selecionado)
+  // Campo "Outro" gênero (apenas se selecionado)
   if (UI.generoSelecionado === "outro") {
     let outroGeneroY = generoY + buttonHeight + 10;
     UI.inputOutroGenero.position(cx - fieldWidth / 2, outroGeneroY);
@@ -948,16 +969,16 @@ function selecionarGenero(genero) {
 
   // Remove seleção visual de todos os botões
   UI.botaoMasculino.removeClass("genero-selecionado");
-  UI.botaoFeminino.removeClass("genero-selecionado");
-  UI.botaoOutro.removeClass("genero-selecionado");
+  UI.botaoFeminino.removeClass("genero-selecionada");
+  UI.botaoOutro.removeClass("genero-selecionada");
 
   // Adiciona seleção visual ao botão escolhido
   if (genero === "masculino") {
-    UI.botaoMasculino.addClass("genero-selecionado");
+    UI.botaoMasculino.addClass("genero-selecionada");
   } else if (genero === "feminino") {
-    UI.botaoFeminino.addClass("genero-selecionado");
+    UI.botaoFeminino.addClass("genero-selecionada");
   } else if (genero === "outro") {
-    UI.botaoOutro.addClass("genero-selecionado");
+    UI.botaoOutro.addClass("genero-selecionada");
     UI.inputOutroGenero.show();
   }
 
@@ -1119,6 +1140,10 @@ function getAdaptiveTextSize(text, boxWidth, boxHeight, options = {}) {
 }
 
 function desenharVotacao() {
+  if (!UI.isMobile) {
+    translate(0, -height * 0.08); // ajuste o valor (0.08 = 8% da tela) conforme desejar
+  }
+  
   if (STATE.current >= STATE.animals.length) {
     UI.tela = "sugestao";
     return;
@@ -1185,7 +1210,6 @@ function desenharCard(animal) {
   fill("#C0B9ED");
   textAlign(CENTER, CENTER);
   textStyle(BOLD);
-  //let tituloSize = constrain(tituloAltura * 0.2, 16, 38);
   let tituloSize = getAdaptiveTextSize(
     animal.nameComum,
     tituloLargura,
@@ -1205,88 +1229,169 @@ function desenharCard(animal) {
     drawingContext.shadowOffsetX = 8;
     drawingContext.shadowOffsetY = 12;
     drawingContext.shadowColor = "#1A0D72";
-
     imageMode(CENTER);
-    let imagemAltura = cardHeight * 0.6;
-    let imagemY = (-cardHeight * 0.05) / 2;
-    image(animal.img, 0, imagemY, cardWidth * 0.85, imagemAltura);
+
+    // Tamanho do retângulo
+    let imgBoxW = cardWidth * 0.8;
+    let imgBoxH = cardHeight * 0.5;
+
+    // Calcula crop para "cover"
+    let imgAR = animal.img.width / animal.img.height;
+    let boxAR = imgBoxW / imgBoxH;
+    let sx, sy, sw, sh;
+
+    if (imgAR > boxAR) {
+      // Imagem mais larga: corta laterais
+      sh = animal.img.height;
+      sw = sh * boxAR;
+      sx = (animal.img.width - sw) / 2;
+      sy = 0;
+    } else {
+      // Imagem mais alta: corta topo/baixo
+      sw = animal.img.width;
+      sh = sw / boxAR;
+      sx = 0;
+      sy = (animal.img.height - sh) / 2;
+    }
+
+    // Posição vertical: logo abaixo do nome científico
+    let nomeCientificoY = -cardHeight / 2 + tituloAltura + cardHeight * 0.03;
+    let imgY = nomeCientificoY + cardHeight * 0.06 + imgBoxH / 2 + 8;
+
+    // Desenha a imagem centralizada e "cover"
+    image(
+      animal.img,
+      0, imgY,
+      imgBoxW, imgBoxH,
+      sx, sy, sw, sh
+    );
     pop();
   }
+
   // Nome científico
   textStyle(ITALIC);
-  textSize(cardHeight * 0.06);
-  text(animal.nameCientifico, 0, cardHeight / 2 - cardHeight * 0.16);
+  fill(CONFIG.borderColor);
+  let nomeCientificoSize = cardHeight * 0.045;
+  textSize(nomeCientificoSize);
+  let nomeCientificoY = -cardHeight / 2 + tituloAltura + cardHeight * 0.04;
+  text(animal.nameCientifico, 0, nomeCientificoY, cardWidth * 0.9, cardHeight * 0.06);
 
-  // Fun fact
+  // Curiosidade (texto adaptativo em retângulo entre imagem e tags)
   textStyle(NORMAL);
   textAlign(CENTER, TOP);
   textWrap(WORD);
   fill(CONFIG.borderColor);
 
-  let curiosidadeY = cardHeight / 2 - cardHeight * 0.11;
-  let curiosidadeWidth = cardWidth * 0.88;
+  // Posição e altura dinâmica
+  let imgBoxW = cardWidth * 0.8;
+  let imgBoxH = cardHeight * 0.5;
+  //let nomeCientificoY = -cardHeight / 2 + tituloAltura + cardHeight * 0.03;
+  let imgY = nomeCientificoY + cardHeight * 0.06 + imgBoxH / 2 + 8;
 
-  let curiosidadeHeight = cardHeight * 0.15; // ou whatever altura você quer dar para esse espaço
+  // Retângulo da curiosidade: logo abaixo da imagem, até antes das tags
+  let curiosidadeBoxY = imgY + imgBoxH / 2 + 70;
+  let curiosidadeBoxH;
+  if (animal.tags && animal.tags.length > 0) {
+    let tagBoxH = cardHeight * 0.08;
+    let tagsY = cardHeight / 2 + tagBoxH;
+    curiosidadeBoxH = tagsY - curiosidadeBoxY - 12;
+  } else {
+    let tagsY = cardHeight / 2;
+    curiosidadeBoxH = tagsY - curiosidadeBoxY - 12;
+  }
+  let curiosidadeBoxW = cardWidth * 0.88;
 
+  // Opcional: desenha o retângulo de fundo da curiosidade
+  push();
+  noStroke();
+  fill(255, 255, 255, 60);
+  rectMode(CENTER);
+  rect(0, curiosidadeBoxY + curiosidadeBoxH / 2, curiosidadeBoxW, curiosidadeBoxH, 10);
+  pop();
+
+  // Tamanho de fonte adaptativo
   let curiosidadeSize = getAdaptiveTextSize(
     animal.curiosidade || "",
-    curiosidadeWidth,
-    curiosidadeHeight,
+    curiosidadeBoxW,
+    curiosidadeBoxH,
     {
-      maxSizeRatio: 0.3, // Como é texto corrido, pode ser menor proporcionalmente
-      minSize: 12, // Mínimo legível para parágrafo
-      widthUsage: 1.0, // Usa 100% da largura disponível (você já definiu 88% do card)
-      lengthCurve: 20, // Curva mais suave para textos longos
+      maxSizeRatio: 0.32,
+      minSize: 18,
+      widthUsage: 1.0,
+      lengthCurve: 18,
     }
   );
   textSize(curiosidadeSize);
-  text(animal.curiosidade || "", 0, curiosidadeY, curiosidadeWidth);
+  text(
+    animal.curiosidade || "",
+    0,
+    curiosidadeBoxY,
+    curiosidadeBoxW,
+    curiosidadeBoxH
+  );
+
   // --- botões de super‑voto ---
   let btnSize = cardWidth * 0.15;
   if (UI.isMobile) {
     let btnY = cardHeight / 2 + btnSize * 2;
     let spacing = btnSize * 2;
+    let bxDislike = -spacing / 2;
+    let bxLike = spacing / 2;
+
     if (STATE.superDislikesCount < 3) {
+      push();
+      rectMode(CENTER);
+      imageMode(CENTER);
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
-      //rect(-spacing / 2, btnY, btnSize, btnSize);
-      image(btnsd, -spacing / 1.32, btnY - 28, btnSize, btnSize);
+      rect(bxDislike, btnY, btnSize, btnSize, 8);
+      image(btnsl, bxDislike, btnY, btnSize * 0.7, btnSize * 0.7);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
       textAlign(CENTER, TOP);
       text(
         `x ${3 - STATE.superDislikesCount}`,
-        -spacing / 2,
+        bxDislike,
         btnY + btnSize / 2 + 4
       );
+      pop();
     }
     if (STATE.superLikesCount < 3) {
+      push();
+      rectMode(CENTER);
+      imageMode(CENTER);
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
-      //rect(spacing / 2, btnY, btnSize, btnSize);
-      image(btnsl, spacing / 3.8, btnY - 28, btnSize, btnSize);
+      rect(bxLike, btnY, btnSize, btnSize, 8);
+      image(btnsd, bxLike, btnY, btnSize * 0.7, btnSize * 0.7);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
       textAlign(CENTER, TOP);
       text(
         `x ${3 - STATE.superLikesCount}`,
-        spacing / 2,
+        bxLike,
         btnY + btnSize / 2 + 4
       );
+      pop();
     }
   } else {
-    let btnY = cardHeight / 2 - btnSize * 0.6;
-    let btnOffsetX = cardWidth * 0.45;
+    // Desktop: botões mais afastados e fora do card
+    let btnY = cardHeight / 2 + btnSize * 1.2; // mais abaixo do card
+    let btnOffsetX = cardWidth * 0.65; // mais afastado do centro
+
     if (STATE.superDislikesCount < 3) {
+      push();
+      rectMode(CENTER);
+      imageMode(CENTER);
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
-      rect(-btnOffsetX, btnY, btnSize, btnSize);
-      image(btnsd, -btnOffsetX, btnY - 20, btnSize, btnSize);
+      rect(-btnOffsetX, btnY, btnSize, btnSize, 8);
+      image(btnsd, -btnOffsetX, btnY, btnSize * 0.7, btnSize * 0.7);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1296,13 +1401,17 @@ function desenharCard(animal) {
         -btnOffsetX,
         btnY + btnSize / 2 + 4
       );
+      pop();
     }
     if (STATE.superLikesCount < 3) {
+      push();
+      rectMode(CENTER);
+      imageMode(CENTER);
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
-      rect(btnOffsetX, btnY, btnSize, btnSize);
-      image(btnsl, btnOffsetX, btnY, btnSize, btnSize);
+      rect(btnOffsetX, btnY, btnSize, btnSize, 8);
+      image(btnsl, btnOffsetX, btnY, btnSize * 0.7, btnSize * 0.7);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1312,8 +1421,10 @@ function desenharCard(animal) {
         btnOffsetX,
         btnY + btnSize / 2 + 4
       );
+      pop();
     }
   }
+
   // Tags
   if (animal.tags && animal.tags.length > 0) {
     let tagBoxW = cardWidth * 0.28;
@@ -1422,6 +1533,7 @@ function mouseReleased() {
   } else {
     STATE.offsetX = 0;
   }
+
   let cardWidth, cardHeight;
   if (UI.isMobile) {
     cardHeight = height * 0.6;
@@ -1435,11 +1547,12 @@ function mouseReleased() {
   let dy = mouseY - height / 2;
   if (UI.isMobile) {
     dy += windowHeight * 0.05;
-  }
-  if (UI.isMobile) {
+    // Botões mobile
     let btnY = cardHeight / 2 + btnSize * 2;
     let spacing = btnSize * 2;
     let bxDislike = -spacing / 2;
+    let bxLike = spacing / 2;
+
     if (
       dx >= bxDislike - btnSize / 2 &&
       dx <= bxDislike + btnSize / 2 &&
@@ -1451,7 +1564,6 @@ function mouseReleased() {
       mostrarCaixaJustificativa("dislike");
       return;
     }
-    let bxLike = spacing / 2;
     if (
       dx >= bxLike - btnSize / 2 &&
       dx <= bxLike + btnSize / 2 &&
@@ -1464,9 +1576,12 @@ function mouseReleased() {
       return;
     }
   } else {
-    let btnY = cardHeight / 2 - btnSize * 0.6;
-    let btnOffsetX = cardWidth * 0.45;
+    // Botões desktop (fora do card, mais afastados)
+    let btnY = cardHeight / 2 + btnSize * 1.2;
+    let btnOffsetX = cardWidth * 0.65;
     let bxDislike = -btnOffsetX;
+    let bxLike = btnOffsetX;
+
     if (
       dx >= bxDislike - btnSize / 2 &&
       dx <= bxDislike + btnSize / 2 &&
@@ -1478,7 +1593,6 @@ function mouseReleased() {
       mostrarCaixaJustificativa("dislike");
       return;
     }
-    let bxLike = btnOffsetX;
     if (
       dx >= bxLike - btnSize / 2 &&
       dx <= bxLike + btnSize / 2 &&
@@ -1783,11 +1897,6 @@ function cancelarJustificativa() {
   UI.caixaJustificativaVisivel = false;
 }
 
-// Função específica para esconder caixa de demo no tutorial
-function esconderCaixaJustificativaDemo() {
-  cancelarJustificativa();
-}
-
 function enviarJustificativa() {
   let texto = UI.caixaInput.value().trim();
   if (texto.length === 0) return;
@@ -1800,7 +1909,7 @@ function enviarJustificativa() {
   heartSize = 0;
   alphaVal = 255;
   phase = 0;
-  
+
   fetch("https://baxlrnntxtetxqpxdyyx.supabase.co/rest/v1/super_votes", {
     method: "POST",
     headers: {
@@ -1830,6 +1939,7 @@ function enviarJustificativa() {
     UI.botaoCancelar.hide();
     UI.caixaJustificativaVisivel = false;
     animando = true;
+    animStartTime = millis();
 
     /*videoAtual.show();
     videoAtual.loop();
@@ -1840,67 +1950,55 @@ function enviarJustificativa() {
       //UI.videoEmExibicao = false;
       STATE.offsetX = 0;
       STATE.current++;
-    }, 2500);
+    }, 500);
   });
 }
-function superAnimacao(videoAtual) {
+function superAnimacao(img) {
+  let elapsed = millis() - animStartTime;
 
+  // soma total
+  let totalDuracao = duracoes.crescer1 + duracoes.pulsar + duracoes.crescer2 + duracoes.fade;
 
-  push();
-  imageMode(CENTER);
-
-  let maxSize = width * 2;
-  let halfSize = maxSize / 8;
-
-  //console.log("começando animação", videoAtual);
-
-  switch (phase) {
-    case 0: // Cresce até metade
-      //console.log("crescendo", videoAtual);
-      heartSize += 20; // velocidade de crescimento
-      if (heartSize >= halfSize) {
-        heartSize = halfSize;
-        phase = 1;
-        pulseStartTime = millis();
-      }
-      break;
-
-    case 1: // Pulsação estacionária por 0.5s
-      //console.log("pulsando", videoAtual);
-      let elapsed = millis() - pulseStartTime;
-      let pulseAmplitude = 10;           // quanto ele vai aumentar/diminuir
-      let pulseSpeed = 2;                // batimentos por segundo
-      let pulse = sin(TWO_PI * pulseSpeed * (elapsed / 1000)) * pulseAmplitude;
-      image(videoAtual, width / 2, height / 2, heartSize + pulse, heartSize + pulse);
-
-      if (elapsed >= 500) { // meio segundo
-        phase = 2;
-      }
-      return; // pulso desenha e interrompe o resto do draw nesse frame
-
-    case 2: // Cresce até tamanho máximo
-      //console.log("crescendo", videoAtual);
-      heartSize += 60;
-      if (heartSize >= maxSize) {
-        heartSize = maxSize;
-        phase = 3;
-      }
-      break;
-
-    case 3: // Fade out
-      //console.log("sumindo", videoAtual);
-      alphaVal -= 15;
-      if (alphaVal <= 0) {
-        animando = false;
-      }
-      break;
+  if (elapsed >= totalDuracao) {
+    animando = false;
+    return;
   }
 
-  tint(255, alphaVal);
-  image(videoAtual, width / 2, height / 2, heartSize, heartSize);
-  pop();
-}
+  let maxSize = width * 0.8;
+  let halfSize = maxSize / 4;
+  let currentSize;
+  let alphaVal = 255;
 
+  if (elapsed < duracoes.crescer1) {
+    // Fase 1: Cresce até metade
+    let t = elapsed / duracoes.crescer1;
+    currentSize = lerp(0, halfSize, t);
+
+  } else if (elapsed < duracoes.crescer1 + duracoes.pulsar) {
+    // Fase 2: Pulsação
+    let t = (elapsed - duracoes.crescer1) / duracoes.pulsar;
+    let base = halfSize;
+    let pulse = sin(t * TWO_PI * 2) * 10; // 2 batimentos em 0.3s
+    currentSize = base + pulse;
+
+  } else if (elapsed < duracoes.crescer1 + duracoes.pulsar + duracoes.crescer2) {
+    // Fase 3: Cresce até máximo
+    let t = (elapsed - duracoes.crescer1 - duracoes.pulsar) / duracoes.crescer2;
+    currentSize = lerp(halfSize, maxSize, t);
+
+  } else {
+    // Fase 4: Fade out
+    let t = (elapsed - duracoes.crescer1 - duracoes.pulsar - duracoes.crescer2) / duracoes.fade;
+    currentSize = maxSize;
+    alphaVal = lerp(255, 0, t);
+  }
+
+  // Desenha imagem
+  imageMode(CENTER);
+  tint(255, alphaVal);
+  image(img, width / 2, height / 2, currentSize, currentSize);
+  tint(255, 255); // reset para não afetar o resto do sketch
+}
 
 // --- SUGESTÃO --- //
 
