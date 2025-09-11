@@ -1143,7 +1143,7 @@ function desenharVotacao() {
   if (!UI.isMobile) {
     translate(0, -height * 0.08); // ajuste o valor (0.08 = 8% da tela) conforme desejar
   }
-  
+
   if (STATE.current >= STATE.animals.length) {
     UI.tela = "sugestao";
     return;
@@ -1289,7 +1289,7 @@ function desenharCard(animal) {
   let imgY = nomeCientificoY + cardHeight * 0.06 + imgBoxH / 2 + 8;
 
   // Retângulo da curiosidade: logo abaixo da imagem, até antes das tags
-  let curiosidadeBoxY = imgY + imgBoxH / 2 + 70;
+  let curiosidadeBoxY = imgY + imgBoxH / 1.3;
   let curiosidadeBoxH;
   if (animal.tags && animal.tags.length > 0) {
     let tagBoxH = cardHeight * 0.08;
@@ -1301,13 +1301,6 @@ function desenharCard(animal) {
   }
   let curiosidadeBoxW = cardWidth * 0.88;
 
-  // Opcional: desenha o retângulo de fundo da curiosidade
-  push();
-  noStroke();
-  fill(255, 255, 255, 60);
-  rectMode(CENTER);
-  rect(0, curiosidadeBoxY + curiosidadeBoxH / 2, curiosidadeBoxW, curiosidadeBoxH, 10);
-  pop();
 
   // Tamanho de fonte adaptativo
   let curiosidadeSize = getAdaptiveTextSize(
