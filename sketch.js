@@ -1510,17 +1510,17 @@ function vote(direction) {
 function mouseDragged() {
   if (UI.caixaJustificativaVisivel) return;
 
-  STATE.offsetX += mouseX - pmouseX;
+  STATE.offsetX += mouseX - pmouseX*1.5;
 }
 
 function mouseReleased() {
   if (UI.tela !== "votacao" || UI.caixaJustificativaVisivel) return;
   if (!STATE.animaisCarregados) return;
 
-  if (STATE.offsetX > 150) {
+  if (STATE.offsetX > 100) {
     vote("right");
     return;
-  } else if (STATE.offsetX < -150) {
+  } else if (STATE.offsetX < -100) {
     vote("left");
     return;
   } else {
