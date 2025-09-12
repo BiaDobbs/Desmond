@@ -2008,7 +2008,7 @@ function makeBox(
 ) {
   const box = createDiv();
   box.class("caixa-sugestao");
-  box.style("width", boxW + "px");
+  box.style("width", boxW + 20 + "px");
 
   if (isMobile) {
     box.style("height", boxH + "px");
