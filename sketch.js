@@ -1339,7 +1339,7 @@ function desenharCard(animal) {
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       //rect(bxDislike, btnY, btnSize, btnSize, 8);
-      image(btnsl, bxDislike, btnY, btnSize, btnSize);
+      image(btnsd, bxDislike, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1359,7 +1359,7 @@ function desenharCard(animal) {
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       //rect(bxLike, btnY, btnSize, btnSize, 8);
-      image(btnsd, bxLike, btnY, btnSize, btnSize);
+      image(btnsl, bxLike, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
