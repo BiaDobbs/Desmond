@@ -316,7 +316,7 @@ function mostrarTelaEscolhaIdioma() {
   if (!btnPT) {
     btnPT = createButton("Português");
     btnPT.class("botao-idioma");
-    btnPT.position(width / 2 - 280, height / 2);
+    btnPT.position(width / 2 - 280, height / 2+20);
     btnPT.size(110, 40);
     btnPT.style("font-size", "18px");
     btnPT.mousePressed(() => {
@@ -336,7 +336,7 @@ function mostrarTelaEscolhaIdioma() {
   if (!btnEN) {
     btnEN = createButton("English");
     btnEN.class("botao-idioma");
-    btnEN.position(width / 2 + 150, height / 2);
+    btnEN.position(width / 2 + 150, height / 2+20);
     btnEN.size(110, 40);
     btnEN.style("font-size", "18px");
     btnEN.mousePressed(() => {
