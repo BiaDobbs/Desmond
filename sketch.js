@@ -336,7 +336,7 @@ function mostrarTelaEscolhaIdioma() {
   if (!btnEN) {
     btnEN = createButton("English");
     btnEN.class("botao-idioma");
-    btnEN.position(width / 2 + 150, height / 2+20);
+    btnEN.position(width / 2 + 150, height / 2);
     btnEN.size(110, 40);
     btnEN.style("font-size", "18px");
     btnEN.mousePressed(() => {
@@ -1510,17 +1510,17 @@ function vote(direction) {
 function mouseDragged() {
   if (UI.caixaJustificativaVisivel) return;
 
-  STATE.offsetX += mouseX - pmouseX*1.5;
+  STATE.offsetX += mouseX - pmouseX;
 }
 
 function mouseReleased() {
   if (UI.tela !== "votacao" || UI.caixaJustificativaVisivel) return;
   if (!STATE.animaisCarregados) return;
 
-  if (STATE.offsetX > 100) {
+  if (STATE.offsetX > 150) {
     vote("right");
     return;
-  } else if (STATE.offsetX < -100) {
+  } else if (STATE.offsetX < -150) {
     vote("left");
     return;
   } else {
