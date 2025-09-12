@@ -2031,7 +2031,7 @@ function makeBox(
   // Faixa de título
   const title = createDiv(titulo);
   title.class("titulo");
-  title.style("font-size", fontSize + 4 + "px");
+  title.style("font-size", fontSize + "px");
   title.style("position", "relative");
   title.style("margin-bottom", "0px");
   title.style("top", -Math.round(boxH * 0.05) + "px"); // sobe 5% da altura da caixa
