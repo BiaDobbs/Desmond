@@ -536,7 +536,7 @@ function desenharBotoesAnimadosTutorial() {
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
       rectMode(CENTER);
       //rect(0, 0, btnSize, btnSize);
-      image(btnsl, 0, 0, btnSize, btnSize);
+      image(btnsd, 0, 0, btnSize, btnSize);
 
       pop();
     }
@@ -552,7 +552,7 @@ function desenharBotoesAnimadosTutorial() {
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
       rectMode(CENTER);
       //rect(0, 0, btnSize, btnSize);
-      image(btnsd, 0, 0, btnSize, btnSize);
+      image(btnsl, 0, 0, btnSize, btnSize);
 
       pop();
     }
