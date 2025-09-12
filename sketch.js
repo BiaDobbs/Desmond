@@ -14,7 +14,7 @@ const CONFIG = {
   ],
   borderColor: "#28720dff",
   backgroundColor: "#F8F4E8",
-  textColor: "#23720dff",
+  textColor: "#155105ca",
   apiKey:
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU",
 };
@@ -493,7 +493,7 @@ function desenharTutorial() {
   // Texto
   let margemTopo = height * 0.06;
   let larguraTexto = min(width * 0.9, 850);
-  fill("#1A0D72");
+  fill(CONFIG.textColor);
   textAlign(CENTER, TOP);
   textSize(UI.isMobile ? 22 : 30);
   textWrap(WORD);
@@ -1338,8 +1338,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
-      rect(bxDislike, btnY, btnSize, btnSize, 8);
-      image(btnsl, bxDislike, btnY, btnSize * 0.7, btnSize * 0.7);
+      //rect(bxDislike, btnY, btnSize, btnSize, 8);
+      image(btnsl, bxDislike, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1358,8 +1358,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
-      rect(bxLike, btnY, btnSize, btnSize, 8);
-      image(btnsd, bxLike, btnY, btnSize * 0.7, btnSize * 0.7);
+      //rect(bxLike, btnY, btnSize, btnSize, 8);
+      image(btnsd, bxLike, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1383,8 +1383,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superDislikeActive ? "#E97474" : "#F1A3A3");
-      rect(-btnOffsetX, btnY, btnSize, btnSize, 8);
-      image(btnsd, -btnOffsetX, btnY, btnSize * 0.7, btnSize * 0.7);
+      ///rect(-btnOffsetX, btnY, btnSize, btnSize, 8);
+      image(btnsd, -btnOffsetX, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -1403,8 +1403,8 @@ function desenharCard(animal) {
       stroke(CONFIG.borderColor);
       strokeWeight(4);
       fill(STATE.superLikeActive ? "#A0D468" : "#D0E6A5");
-      rect(btnOffsetX, btnY, btnSize, btnSize, 8);
-      image(btnsl, btnOffsetX, btnY, btnSize * 0.7, btnSize * 0.7);
+      //rect(btnOffsetX, btnY, btnSize, btnSize, 8);
+      image(btnsl, btnOffsetX, btnY, btnSize, btnSize);
       noStroke();
       fill(CONFIG.borderColor);
       textSize(btnSize * 0.25);
@@ -2293,21 +2293,21 @@ function desenharMensagemSucesso() {
 
   // Caixa do modal
   const box = createDiv();
-  box.style("background", "#F8F4E8");
-  box.style("border", "8px solid #1A0D72");
+  box.style("background", "${CONFIG.backgroundColor}");
+  box.style("border", "8px solid ${CONFIG.borderColor}");
   box.style("padding", "32px 32px 24px 32px");
   box.style("border-radius", "0");
   box.style("min-width", "320px");
   box.style("max-width", "90vw");
-  box.style("box-shadow", "0 10px 10px #1A0D72");
+  box.style("box-shadow", "0 10px 10px ${CONFIG.borderColor}");
   box.style("text-align", "center");
   box.style("position", "relative");
   box.parent(UI.sucessoModal);
 
   // Título
   const titulo = createDiv(t("sucssTit"));
-  titulo.style("background", "#1A0D72");
-  titulo.style("color", "#C0B9ED");
+  titulo.style("background", "${CONFIG.textColor}");
+  titulo.style("color", "#b0f7aaff");
   titulo.style("font-weight", "bold");
   titulo.style("font-size", "1.3em");
   titulo.style("padding", "10px 0");
@@ -2326,7 +2326,7 @@ function desenharMensagemSucesso() {
     textoExplicativo = t("sucssTxtComp");
   }
   const texto = createP(textoExplicativo);
-  texto.style("color", "#1A0D72");
+  texto.style("color", "${CONFIG.textColor}");
   texto.style("font-size", "1.1em");
   texto.style("margin", "0 0 18px 0");
   texto.parent(box);
