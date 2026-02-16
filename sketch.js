@@ -16,7 +16,7 @@ const CONFIG = {
   backgroundColor: "#F8F4E8",
   textColor: "#155105ca",
   apiKey:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheGxybm50eHRldHhxcHhkeXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2ODIwMjQsImV4cCI6MjA2NjI1ODAyNH0.wHG2BHds5mTHo9VLBsqshG5pMTBAFCUmdKJMBKDsHpU",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyZ2VwZmRtbXVjcmR1b3RrYnNpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE1Njc3NiwiZXhwIjoyMDg2NzMyNzc2fQ.p1bDG2HrynjJjk8_-yfnfEBMfETGEJNejs-GrFRDubA",
 };
 CONFIG.apiBearer = "Bearer " + CONFIG.apiKey;
 
@@ -43,7 +43,7 @@ const UI = {
   sugestaoInicializada: false,
 };
 
-const SUPABASE_URL = "https://baxlrnntxtetxqpxdyyx.supabase.co";
+const SUPABASE_URL = "https://rrgepfdmmucrduotkbsi.supabase.co";
 const supabaseClient = supabase.createClient(SUPABASE_URL, CONFIG.apiKey);
 
 const STATE = {
